@@ -66,4 +66,14 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
  assert.equal(tracked.status,200);
  assert.equal(tracked.data.total_cents,order.data.total_cents);
  assert.equal((await request('/api/orders','POST',{...payload,items:[{product_id:999999,quantity:1}]})).status,400);
+ assert.equal((await request('/api/orders','POST',{...payload,items:[{product_id:String(item.id),quantity:1}]})).status,400);
+ assert.equal((await request('/api/orders','POST',{...payload,items:[{product_id:item.id,quantity:1,addon_ids:[extra.data.id,extra.data.id]}]})).status,400);
+ assert.equal((await request('/api/orders','POST',{...payload,coupon:'NAOEXISTE'})).status,400);
+ assert.equal((await request('/api/orders','POST',{...payload,address:'Rua das Flores 123'})).status,400);
+ assert.equal((await request('/api/orders','POST',{...payload,fulfillment:'delivery',address:'Rua das Flores 123',delivery_area_id:999999})).status,400);
+ assert.equal((await request('/api/admin/manage/products','POST',{category_id:'1',name:'Invalido',description:'',price_cents:100,active:true},token)).status,400);
+ assert.equal((await request('/api/admin/manage/products','POST',{category_id:999999,name:'Invalido',description:'',price_cents:100,active:true},token)).status,400);
+ assert.equal((await request('/api/admin/manage/addons','POST',{name:'Bacon Extra',price_cents:500,active:true},token)).status,409);
+ assert.equal((await request('/api/admin/store','PATCH',{accepting_orders:false},token)).status,200);
+ assert.equal((await request('/api/orders','POST',payload)).status,503);
 });
