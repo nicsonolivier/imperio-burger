@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import {randomUUID} from 'node:crypto';
 import {z,ZodError} from 'zod';
 import {db,initAdmin} from './db.js';
+import {management} from './management.js';
 
 if(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32)throw Error('Configure JWT_SECRET com no mínimo 32 caracteres');
 initAdmin();
@@ -71,6 +72,7 @@ app.get('/api/orders/:publicId',(req,res,next)=>{try{
  if(!o)return res.status(404).json({error:'Pedido não encontrado'});
  res.json(o);
 }catch(e){next(e)}});
+app.use('/api/admin/manage',auth,management);
 app.get('/api/admin/orders',auth,(_req,res)=>res.json({orders:db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 100').all()}));
 app.patch('/api/admin/orders/:id/status',auth,(req,res,next)=>{try{
  const {status}=z.object({status:z.enum(['received','confirmed','preparing','out_for_delivery','delivered','cancelled'])}).parse(req.body);
@@ -86,6 +88,8 @@ app.patch('/api/admin/store',auth,(req,res,next)=>{try{
 app.use((err,_req,res,_next)=>{
  if(err instanceof ZodError)return res.status(400).json({error:'Dados inválidos',details:err.issues});
  if(err?.status===400)return res.status(400).json({error:err.message});
+ if(err?.code==='SQLITE_CONSTRAINT_UNIQUE')return res.status(409).json({error:'Registro duplicado'});
+ if(err?.code==='SQLITE_CONSTRAINT_FOREIGNKEY')return res.status(400).json({error:'Categoria inexistente'});
  console.error(err);res.status(500).json({error:'Erro interno'});
 });
 const port=Number(process.env.PORT||3001);
