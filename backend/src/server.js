@@ -29,7 +29,9 @@ const asId=z.coerce.number().int().positive();
 app.get('/api/health',(_req,res)=>res.json({status:'ok'}));
 app.get('/api/catalog',(_req,res)=>res.json({
  categories:db.prepare('SELECT id,name FROM categories WHERE active=1').all(),
- products:db.prepare('SELECT id,category_id,name,description,price_cents FROM products WHERE active=1').all()
+ products:db.prepare('SELECT id,category_id,name,description,price_cents FROM products WHERE active=1').all(),
+ addons:db.prepare('SELECT id,name,price_cents FROM addons WHERE active=1').all(),
+ delivery_areas:db.prepare('SELECT id,name,fee_cents FROM delivery_areas WHERE active=1').all()
 }));
 app.post('/api/admin/login',rateLimit({windowMs:15*60*1000,limit:10}),(req,res,next)=>{try{
  const credentials=z.object({email:z.string().email(),password:z.string().min(1)}).parse(req.body);
@@ -43,26 +45,49 @@ const orderSchema=z.object({
  fulfillment:z.enum(['pickup','delivery']),
  address:z.string().trim().max(250).optional(),
  payment_method:z.enum(['pix','cash','debit','credit']),
- items:z.array(z.object({product_id:asId,quantity:z.number().int().min(1).max(30)})).min(1).max(30)
+ delivery_area_id:asId.optional(),
+ coupon:z.string().trim().max(40).optional(),
+ items:z.array(z.object({product_id:asId,quantity:z.number().int().min(1).max(30),addon_ids:z.array(asId).max(12).default([])}).strict()).min(1).max(30)
 }).strict();
 app.post('/api/orders',rateLimit({windowMs:15*60*1000,limit:15}),(req,res,next)=>{try{
  const input=orderSchema.parse(req.body);
  if(!db.prepare('SELECT accepting_orders FROM store_settings WHERE id=1').get()?.accepting_orders)return res.status(503).json({error:'Loja fechada'});
- if(input.fulfillment==='delivery'&&(!input.address||input.address.length<8))return res.status(400).json({error:'Informe endereço válido'});
+ if(input.fulfillment==='delivery'&&(!input.address||input.address.length<8||!input.delivery_area_id))return res.status(400).json({error:'Informe endereço válido'});
  const result=db.transaction(()=>{
  let subtotal=0;
  const lines=input.items.map(line=>{
  const p=db.prepare('SELECT id,name,price_cents FROM products WHERE id=? AND active=1').get(line.product_id);
  if(!p)throw Object.assign(new Error('Produto indisponível'),{status:400});
- subtotal+=p.price_cents*line.quantity;
- return {...line,product:p};
+ if(new Set(line.addon_ids).size!==line.addon_ids.length)throw Object.assign(new Error('Adicionais repetidos'),{status:400});
+ const addons=line.addon_ids.map(id=>db.prepare('SELECT id,name,price_cents FROM addons WHERE id=? AND active=1').get(id));
+ if(addons.some(a=>!a))throw Object.assign(new Error('Adicional indisponível'),{status:400});
+ const unit=p.price_cents+addons.reduce((sum,a)=>sum+a.price_cents,0);
+ subtotal+=unit*line.quantity;
+ return {...line,product:p,addons,unit};
  });
  if(subtotal>10000000)throw Object.assign(new Error('Pedido acima do limite'),{status:400});
+ let deliveryFee=0,areaId=null;
+ if(input.fulfillment==='delivery'){
+ const area=db.prepare('SELECT id,fee_cents FROM delivery_areas WHERE id=? AND active=1').get(input.delivery_area_id);
+ if(!area)throw Object.assign(new Error('Área de entrega indisponível'),{status:400});
+ areaId=area.id;deliveryFee=area.fee_cents;
+ }
+ let discount=0;
+ if(input.coupon){
+ const coupon=db.prepare('SELECT percent_off FROM coupons WHERE code=? AND active=1').get(input.coupon.toUpperCase());
+ if(!coupon)throw Object.assign(new Error('Cupom inválido'),{status:400});
+ discount=Math.round(subtotal*coupon.percent_off/100);
+ }
+ const total=subtotal-discount+deliveryFee;
  const publicId=randomUUID();
- const order=db.prepare('INSERT INTO orders(public_id,customer_name,customer_phone,fulfillment,address,payment_method,subtotal_cents,total_cents) VALUES(?,?,?,?,?,?,?,?)').run(publicId,input.customer_name,input.customer_phone,input.fulfillment,input.fulfillment==='delivery'?input.address:null,input.payment_method,subtotal,subtotal);
+ const order=db.prepare('INSERT INTO orders(public_id,customer_name,customer_phone,fulfillment,address,payment_method,subtotal_cents,total_cents,delivery_area_id,delivery_fee_cents,discount_cents) VALUES(?,?,?,?,?,?,?,?,?,?,?)').run(publicId,input.customer_name,input.customer_phone,input.fulfillment,input.fulfillment==='delivery'?input.address:null,input.payment_method,subtotal,total,areaId,deliveryFee,discount);
  const add=db.prepare('INSERT INTO order_items(order_id,product_id,product_name,quantity,unit_price_cents) VALUES(?,?,?,?,?)');
- for(const l of lines)add.run(order.lastInsertRowid,l.product.id,l.product.name,l.quantity,l.product.price_cents);
- return {order_id:publicId,status:'received',total_cents:subtotal};
+ const addExtra=db.prepare('INSERT INTO order_item_addons(order_item_id,addon_id,addon_name,price_cents) VALUES(?,?,?,?)');
+ for(const l of lines){
+ const item=add.run(order.lastInsertRowid,l.product.id,l.product.name,l.quantity,l.unit);
+ for(const a of l.addons)addExtra.run(item.lastInsertRowid,a.id,a.name,a.price_cents);
+ }
+ return {order_id:publicId,status:'received',subtotal_cents:subtotal,discount_cents:discount,delivery_fee_cents:deliveryFee,total_cents:total};
  })();
  res.status(201).json(result);
 }catch(e){next(e)}});
