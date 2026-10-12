@@ -25,6 +25,15 @@ const auth=(req,res,next)=>{
  try{req.user=jwt.verify(token,process.env.JWT_SECRET,{algorithms:['HS256']});if(req.user.role!=='admin')return res.status(403).json({error:'Sem permissão'});next()}
  catch{return res.status(401).json({error:'Token inválido'})}
 };
+const logAudit=db.prepare('INSERT INTO audit_logs(admin_id,action,entity_type,entity_id,details) VALUES(?,?,?,?,?)');
+const transitions={
+ received:['confirmed','cancelled'],
+ confirmed:['preparing','cancelled'],
+ preparing:['out_for_delivery','delivered','cancelled'],
+ out_for_delivery:['delivered'],
+ delivered:[],
+ cancelled:[]
+};
 const asId=z.number().int().positive();
 const routeId=z.coerce.number().int().positive();
 app.get('/api/health',(_req,res)=>res.json({status:'ok'}));
@@ -101,15 +110,29 @@ app.get('/api/orders/:publicId',(req,res,next)=>{try{
 }catch(e){next(e)}});
 app.use('/api/admin/manage',auth,management);
 app.get('/api/admin/orders',auth,(_req,res)=>res.json({orders:db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 100').all()}));
+app.get('/api/admin/audit',auth,(_req,res)=>res.json({events:db.prepare('SELECT id,admin_id,action,entity_type,entity_id,details,created_at FROM audit_logs ORDER BY id DESC LIMIT 100').all()}));
 app.patch('/api/admin/orders/:id/status',auth,(req,res,next)=>{try{
- const {status}=z.object({status:z.enum(['received','confirmed','preparing','out_for_delivery','delivered','cancelled'])}).parse(req.body);
- const n=db.prepare('UPDATE orders SET status=? WHERE id=?').run(status,routeId.parse(req.params.id));
- if(!n.changes)return res.status(404).json({error:'Pedido não encontrado'});
- res.json({ok:true});
+ const {status}=z.object({status:z.enum(['received','confirmed','preparing','out_for_delivery','delivered','cancelled'])}).strict().parse(req.body);
+ const id=routeId.parse(req.params.id);
+ const result=db.transaction(()=>{
+  const current=db.prepare('SELECT status,fulfillment FROM orders WHERE id=?').get(id);
+  if(!current)return {missing:true};
+  const allowed=transitions[current.status]||[];
+  if(!allowed.includes(status)||(status==='out_for_delivery'&&current.fulfillment==='pickup'))return {invalid:true,current:current.status};
+  db.prepare('UPDATE orders SET status=? WHERE id=?').run(status,id);
+  logAudit.run(Number(req.user.sub),'order.status','order',String(id),JSON.stringify({from:current.status,to:status}));
+  return {ok:true,status};
+ })();
+ if(result.missing)return res.status(404).json({error:'Pedido não encontrado'});
+ if(result.invalid)return res.status(409).json({error:'Transição de status não permitida',current_status:result.current});
+ res.json(result);
 }catch(e){next(e)}});
 app.patch('/api/admin/store',auth,(req,res,next)=>{try{
  const {accepting_orders}=z.object({accepting_orders:z.boolean()}).strict().parse(req.body);
+ db.transaction(()=>{
  db.prepare('UPDATE store_settings SET accepting_orders=? WHERE id=1').run(Number(accepting_orders));
+ logAudit.run(Number(req.user.sub),'store.accepting_orders','store','1',JSON.stringify({accepting_orders}));
+ })();
  res.json({ok:true,accepting_orders});
 }catch(e){next(e)}});
 app.use((err,_req,res,_next)=>{
