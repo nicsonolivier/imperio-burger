@@ -88,6 +88,16 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
  assert.equal(audit.status,200);
  assert.ok(audit.data.events.some(e=>e.action==='order.status'));
  assert.equal((await request('/api/admin/audit')).status,401);
+ assert.equal((await request('/api/admin/privacy/anonymize','POST',{older_than_days:30})).status,401);
+ const preview=await request('/api/admin/privacy/anonymize','POST',{older_than_days:30},token);
+ assert.equal(preview.status,200);
+ assert.equal(preview.data.dry_run,true);
+ assert.equal(preview.data.eligible_orders,0);
+ assert.equal((await request('/api/admin/privacy/anonymize','POST',{older_than_days:1,dry_run:false},token)).status,400);
+ const cleanup=await request('/api/admin/privacy/anonymize','POST',{older_than_days:30,dry_run:false},token);
+ assert.equal(cleanup.status,200);
+ assert.equal(cleanup.data.anonymized_orders,0);
+ assert.equal((await request('/api/admin/audit','GET',undefined,token)).data.events.some(e=>e.action==='privacy.anonymize'),true);
  assert.equal((await request('/api/admin/store','PATCH',{accepting_orders:false},token)).status,200);
  assert.equal((await request('/api/orders','POST',payload)).status,503);
 });
