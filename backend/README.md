@@ -31,3 +31,7 @@ Para produtos, envie `category_id`, `name`, `description`, `price_cents` e `acti
 `received → confirmed → preparing → out_for_delivery → delivered` para entregas. Retiradas podem seguir de `preparing` para `delivered`. Cancelamentos são permitidos antes da entrega ou da conclusão. Mudanças administrativas de status e abertura da loja são auditadas.
 
 **Privacidade:** a listagem administrativa inclui dados pessoais dos clientes; proteja os tokens e restrinja o acesso ao painel. Defina política de retenção e exclusão de dados antes de operar comercialmente.
+
+## Retenção de dados pessoais
+
+`POST /api/admin/privacy/anonymize` (JWT) recebe `{"older_than_days":90,"dry_run":true}` para simular quantos pedidos concluídos ou cancelados são elegíveis. Use `dry_run:false` para substituir nome e telefone por `[anonimizado]` e remover endereço, somente de pedidos com pelo menos 30 dias. Valores financeiros, itens e status permanecem para conciliação. A execução é auditada. Não é agendada automaticamente: defina uma política de retenção adequada com orientação jurídica antes da produção. Os identificadores públicos e os registros financeiros permanecem e podem exigir avaliação adicional de privacidade.
