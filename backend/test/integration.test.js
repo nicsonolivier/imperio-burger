@@ -37,6 +37,10 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
   await new Promise(resolve=>setTimeout(resolve,100));
  }
  assert.ok(ready,'API não iniciou: '+stderr);
+ const storeClosed=await request('/api/store');
+ assert.equal(storeClosed.status,200);
+ assert.equal(storeClosed.data.accepting_orders,false);
+ assert.equal(storeClosed.data.currency,'BRL');
  assert.equal((await request('/api/admin/orders')).status,401);
  assert.equal((await request('/api/admin/login','POST',{email:'test@example.com',password:'wrong'})).status,401);
  const login=await request('/api/admin/login','POST',{email:'test@example.com',password:'test-password-very-strong'});
@@ -55,6 +59,7 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
  const area=await request('/api/admin/manage/delivery-areas','POST',{name:'Centro',fee_cents:700,active:true},token);
  assert.equal(area.status,201);
  assert.equal((await request('/api/admin/store','PATCH',{accepting_orders:true},token)).status,200);
+ assert.equal((await request('/api/store')).data.accepting_orders,true);
  const order=await request('/api/orders','POST',{...payload,fulfillment:'delivery',address:'Rua das Flores 123',delivery_area_id:area.data.id,coupon:'TESTE10',items:[{product_id:item.id,quantity:2,addon_ids:[extra.data.id]}]});
  assert.equal(order.status,201,JSON.stringify(order.data));
  const subtotal=(item.price_cents+500)*2;
@@ -65,6 +70,10 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
  const tracked=await request('/api/orders/'+order.data.order_id);
  assert.equal(tracked.status,200);
  assert.equal(tracked.data.total_cents,order.data.total_cents);
+ assert.equal(tracked.data.discount_cents,order.data.discount_cents);
+ assert.equal(tracked.data.delivery_fee_cents,order.data.delivery_fee_cents);
+ assert.equal(tracked.data.fulfillment,'delivery');
+ assert.equal('customer_phone' in tracked.data,false);
  assert.equal((await request('/api/orders','POST',{...payload,items:[{product_id:999999,quantity:1}]})).status,400);
  assert.equal((await request('/api/orders','POST',{...payload,items:[{product_id:String(item.id),quantity:1}]})).status,400);
  assert.equal((await request('/api/orders','POST',{...payload,items:[{product_id:item.id,quantity:1,addon_ids:[extra.data.id,extra.data.id]}]})).status,400);
