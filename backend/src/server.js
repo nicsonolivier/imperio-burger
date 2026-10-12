@@ -111,6 +111,20 @@ app.get('/api/orders/:publicId',(req,res,next)=>{try{
 app.use('/api/admin/manage',auth,management);
 app.get('/api/admin/orders',auth,(_req,res)=>res.json({orders:db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 100').all()}));
 app.get('/api/admin/audit',auth,(_req,res)=>res.json({events:db.prepare('SELECT id,admin_id,action,entity_type,entity_id,details,created_at FROM audit_logs ORDER BY id DESC LIMIT 100').all()}));
+app.post('/api/admin/privacy/anonymize',auth,(req,res,next)=>{try{
+ const {older_than_days,dry_run}=z.object({older_than_days:z.number().int().min(30).max(3650),dry_run:z.boolean().default(true)}).strict().parse(req.body);
+ const cutoff=new Date(Date.now()-older_than_days*86400000).toISOString().slice(0,19).replace('T',' ');
+ const where="status IN ('delivered','cancelled') AND created_at < ? AND customer_name <> '[anonimizado]'";
+ const count=db.prepare('SELECT COUNT(*) AS count FROM orders WHERE '+where).get(cutoff).count;
+ if(dry_run)return res.json({dry_run:true,eligible_orders:count,cutoff});
+ const result=db.transaction(()=>{
+  const changed=db.prepare("UPDATE orders SET customer_name='[anonimizado]',customer_phone='[anonimizado]',address=NULL WHERE "+where).run(cutoff).changes;
+  logAudit.run(Number(req.user.sub),'privacy.anonymize','orders',null,JSON.stringify({older_than_days,affected_orders:changed}));
+  return changed;
+ })();
+ res.json({dry_run:false,anonymized_orders:result});
+}catch(e){next(e)}});
+
 app.patch('/api/admin/orders/:id/status',auth,(req,res,next)=>{try{
  const {status}=z.object({status:z.enum(['received','confirmed','preparing','out_for_delivery','delivered','cancelled'])}).strict().parse(req.body);
  const id=routeId.parse(req.params.id);
@@ -136,6 +150,7 @@ app.patch('/api/admin/store',auth,(req,res,next)=>{try{
  res.json({ok:true,accepting_orders});
 }catch(e){next(e)}});
 app.use((err,_req,res,_next)=>{
+ if(err instanceof SyntaxError&&err.status===400&&'body' in err)return res.status(400).json({error:'JSON inválido'});
  if(err instanceof ZodError)return res.status(400).json({error:'Dados inválidos',details:err.issues});
  if(err?.status===400)return res.status(400).json({error:err.message});
  if(err?.code==='SQLITE_CONSTRAINT_CHECK')return res.status(400).json({error:'Valor fora dos limites permitidos'});
