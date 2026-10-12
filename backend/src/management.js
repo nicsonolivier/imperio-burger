@@ -5,6 +5,9 @@ import {db} from './db.js';
 export const management=Router();
 const id=z.coerce.number().int().positive();
 const configs={
+ addons:{table:'addons',schema:z.object({name:z.string().trim().min(2).max(100),price_cents:z.number().int().min(0).max(1000000),active:z.boolean()}).strict(),fields:['name','price_cents','active']},
+ coupons:{table:'coupons',schema:z.object({code:z.string().trim().min(3).max(40).regex(/^[A-Za-z0-9_-]+$/),percent_off:z.number().int().min(1).max(100),active:z.boolean()}).strict(),fields:['code','percent_off','active']},
+ 'delivery-areas':{table:'delivery_areas',schema:z.object({name:z.string().trim().min(2).max(100),fee_cents:z.number().int().min(0).max(1000000),active:z.boolean()}).strict(),fields:['name','fee_cents','active']},
  categories:{table:'categories',schema:z.object({name:z.string().trim().min(2).max(80),active:z.boolean()}).strict(),fields:['name','active']},
  products:{table:'products',schema:z.object({category_id:id,name:z.string().trim().min(2).max(120),description:z.string().trim().max(500),price_cents:z.number().int().min(0).max(1000000),active:z.boolean()}).strict(),fields:['category_id','name','description','price_cents','active']}
 };
@@ -12,6 +15,7 @@ for(const [resource,{table,schema,fields}] of Object.entries(configs)){
  management.get('/'+resource,(_req,res)=>res.json({items:db.prepare('SELECT * FROM '+table+' ORDER BY id DESC').all()}));
  management.post('/'+resource,(req,res,next)=>{try{
   const values=schema.parse(req.body);
+  if(resource==='coupons')values.code=values.code.toUpperCase();
   const columns=fields.join(',');
   const args=fields.map(field=>field==='active'?Number(values[field]):values[field]);
   const result=db.prepare('INSERT INTO '+table+' ('+columns+') VALUES ('+fields.map(()=>'?').join(',')+')').run(...args);
