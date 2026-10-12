@@ -3,7 +3,8 @@ import {z} from 'zod';
 import {db} from './db.js';
 
 export const management=Router();
-const id=z.coerce.number().int().positive();
+const id=z.number().int().positive();
+const routeId=z.coerce.number().int().positive();
 const configs={
  addons:{table:'addons',schema:z.object({name:z.string().trim().min(2).max(100),price_cents:z.number().int().min(0).max(1000000),active:z.boolean()}).strict(),fields:['name','price_cents','active']},
  coupons:{table:'coupons',schema:z.object({code:z.string().trim().min(3).max(40).regex(/^[A-Za-z0-9_-]+$/),percent_off:z.number().int().min(1).max(100),active:z.boolean()}).strict(),fields:['code','percent_off','active']},
@@ -24,13 +25,13 @@ for(const [resource,{table,schema,fields}] of Object.entries(configs)){
  management.put('/'+resource+'/:id',(req,res,next)=>{try{
   const values=schema.parse(req.body);
   const args=fields.map(field=>field==='active'?Number(values[field]):values[field]);
-  const result=db.prepare('UPDATE '+table+' SET '+fields.map(field=>field+'=?').join(',')+' WHERE id=?').run(...args,id.parse(req.params.id));
+  const result=db.prepare('UPDATE '+table+' SET '+fields.map(field=>field+'=?').join(',')+' WHERE id=?').run(...args,routeId.parse(req.params.id));
   if(!result.changes)return res.status(404).json({error:'Registro não encontrado'});
   res.json({ok:true});
  }catch(e){next(e)}});
  management.patch('/'+resource+'/:id/active',(req,res,next)=>{try{
   const {active}=z.object({active:z.boolean()}).strict().parse(req.body);
-  const result=db.prepare('UPDATE '+table+' SET active=? WHERE id=?').run(Number(active),id.parse(req.params.id));
+  const result=db.prepare('UPDATE '+table+' SET active=? WHERE id=?').run(Number(active),routeId.parse(req.params.id));
   if(!result.changes)return res.status(404).json({error:'Registro não encontrado'});
   res.json({ok:true});
  }catch(e){next(e)}});

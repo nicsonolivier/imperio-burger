@@ -25,7 +25,8 @@ const auth=(req,res,next)=>{
  try{req.user=jwt.verify(token,process.env.JWT_SECRET,{algorithms:['HS256']});if(req.user.role!=='admin')return res.status(403).json({error:'Sem permissão'});next()}
  catch{return res.status(401).json({error:'Token inválido'})}
 };
-const asId=z.coerce.number().int().positive();
+const asId=z.number().int().positive();
+const routeId=z.coerce.number().int().positive();
 app.get('/api/health',(_req,res)=>res.json({status:'ok'}));
 app.get('/api/catalog',(_req,res)=>res.json({
  categories:db.prepare('SELECT id,name FROM categories WHERE active=1').all(),
@@ -52,6 +53,7 @@ const orderSchema=z.object({
 app.post('/api/orders',rateLimit({windowMs:15*60*1000,limit:15}),(req,res,next)=>{try{
  const input=orderSchema.parse(req.body);
  if(!db.prepare('SELECT accepting_orders FROM store_settings WHERE id=1').get()?.accepting_orders)return res.status(503).json({error:'Loja fechada'});
+ if(input.fulfillment==='pickup'&&(input.delivery_area_id!==undefined||input.address!==undefined))return res.status(400).json({error:'Retirada não aceita endereço ou região de entrega'});
  if(input.fulfillment==='delivery'&&(!input.address||input.address.length<8||!input.delivery_area_id))return res.status(400).json({error:'Informe endereço válido'});
  const result=db.transaction(()=>{
  let subtotal=0;
@@ -65,7 +67,7 @@ app.post('/api/orders',rateLimit({windowMs:15*60*1000,limit:15}),(req,res,next)=
  subtotal+=unit*line.quantity;
  return {...line,product:p,addons,unit};
  });
- if(subtotal>10000000)throw Object.assign(new Error('Pedido acima do limite'),{status:400});
+ if(subtotal<=0||subtotal>10000000)throw Object.assign(new Error('Valor do pedido inválido'),{status:400});
  let deliveryFee=0,areaId=null;
  if(input.fulfillment==='delivery'){
  const area=db.prepare('SELECT id,fee_cents FROM delivery_areas WHERE id=? AND active=1').get(input.delivery_area_id);
@@ -101,7 +103,7 @@ app.use('/api/admin/manage',auth,management);
 app.get('/api/admin/orders',auth,(_req,res)=>res.json({orders:db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 100').all()}));
 app.patch('/api/admin/orders/:id/status',auth,(req,res,next)=>{try{
  const {status}=z.object({status:z.enum(['received','confirmed','preparing','out_for_delivery','delivered','cancelled'])}).parse(req.body);
- const n=db.prepare('UPDATE orders SET status=? WHERE id=?').run(status,asId.parse(req.params.id));
+ const n=db.prepare('UPDATE orders SET status=? WHERE id=?').run(status,routeId.parse(req.params.id));
  if(!n.changes)return res.status(404).json({error:'Pedido não encontrado'});
  res.json({ok:true});
 }catch(e){next(e)}});
@@ -113,6 +115,7 @@ app.patch('/api/admin/store',auth,(req,res,next)=>{try{
 app.use((err,_req,res,_next)=>{
  if(err instanceof ZodError)return res.status(400).json({error:'Dados inválidos',details:err.issues});
  if(err?.status===400)return res.status(400).json({error:err.message});
+ if(err?.code==='SQLITE_CONSTRAINT_CHECK')return res.status(400).json({error:'Valor fora dos limites permitidos'});
  if(err?.code==='SQLITE_CONSTRAINT_UNIQUE')return res.status(409).json({error:'Registro duplicado'});
  if(err?.code==='SQLITE_CONSTRAINT_FOREIGNKEY')return res.status(400).json({error:'Categoria inexistente'});
  console.error(err);res.status(500).json({error:'Erro interno'});
