@@ -78,7 +78,24 @@ function updateFulfillment(){
  $('delivery-area').required=delivery;
  renderCart();
 }
+const statusLabels={received:'Recebido',confirmed:'Confirmado',preparing:'Em preparo',out_for_delivery:'Saiu para entrega',delivered:'Concluído',cancelled:'Cancelado'};
+async function trackOrder(id){
+ const value=id.trim();
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)){
+  $('tracking-result').textContent='Informe um código de pedido válido.';
+  return;
+ }
+ $('tracking-result').textContent='Consultando pedido...';
+ try{
+  const order=await api('/orders/'+encodeURIComponent(value));
+  $('tracking-result').textContent='Status: '+(statusLabels[order.status]||order.status)+' · Total: '+money(order.total_cents);
+ }catch(error){$('tracking-result').textContent=error.message}
+}
 async function init(){
+ $('tracking-form').addEventListener('submit',event=>{
+  event.preventDefault();
+  trackOrder($('tracking-id').value);
+ });
  $('cart-toggle').addEventListener('click',()=>showCart(true));
  $('cart-close').addEventListener('click',()=>showCart(false));
  $('overlay').addEventListener('click',()=>showCart(false));
@@ -99,8 +116,10 @@ async function init(){
    state.cart=[];renderCart();
    $('checkout-message').replaceChildren();
    const message=document.createElement('span');message.textContent='Pedido recebido! Total: '+money(order.total_cents)+'. ';
-   const track=document.createElement('a');track.href='#';track.textContent='Consultar status';track.addEventListener('click',async e=>{e.preventDefault();try{const status=await api('/orders/'+encodeURIComponent(order.order_id));$('checkout-message').textContent='Pedido '+status.status+' · '+money(status.total_cents)}catch(error){$('checkout-message').textContent=error.message}});
+   $('tracking-id').value=order.order_id;
+   const track=document.createElement('a');track.href='#tracking';track.textContent='Acompanhar pedido';track.addEventListener('click',()=>{showCart(false);trackOrder(order.order_id)});
    $('checkout-message').append(message,track);
+
   }catch(error){$('checkout-message').textContent=error.message}
   finally{button.disabled=!state.open||!state.cart.length}
  });

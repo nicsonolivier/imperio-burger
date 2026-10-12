@@ -5,7 +5,7 @@ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const js=readFileSync(new URL('../app.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../styles.css',import.meta.url),'utf8');
 test('interface possui elementos necessários ao checkout',()=>{
- for(const id of ['cart','cart-items','checkout','fulfillment','delivery-fields','delivery-area','address','subtotal','delivery-fee','total','submit-order','checkout-message','products','categories','store-badge']){
+ for(const id of ['cart','cart-items','checkout','fulfillment','delivery-fields','delivery-area','address','subtotal','delivery-fee','total','submit-order','checkout-message','products','categories','store-badge','tracking-form','tracking-id','tracking-result']){
   assert.match(html,new RegExp('id="'+id+'"'),'Elemento ausente: '+id);
  }
 });
@@ -20,4 +20,10 @@ test('conteúdo remoto não é inserido como HTML executável',()=>{
 });
 test('layout contém adaptação para telas pequenas',()=>{
  assert.match(css,/@media\s*\(max-width:/);
+});
+
+test('acompanhamento valida UUID e traduz status',()=>{
+ assert.match(js,/async function trackOrder\(id\)/);
+ assert.match(js,/statusLabels/);
+ assert.match(js,/encodeURIComponent\(value\)/);
 });

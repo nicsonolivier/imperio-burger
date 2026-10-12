@@ -13,4 +13,4 @@ A URL da API está em `frontend/config.js`; altere-a para o endereço HTTPS da A
 
 O site consulta a disponibilidade da loja, exibe o catálogo, permite adicionar produtos e adicionais ao carrinho, seleciona entrega ou retirada, envia pedidos e acompanha o status pelo identificador público.
 
-**Limitações:** o cupom é validado somente no envio e o total mostrado no carrinho é estimado. O backend calcula o total definitivo. A aplicação não realiza cobranças PIX ou cartão, não inclui painel administrativo visual nem implantação de produção. O acompanhamento de pedidos não persiste após recarregar a página.
+**Limitações:** o cupom é validado somente no envio e o total mostrado no carrinho é estimado. O backend calcula o total definitivo. A aplicação não realiza cobranças PIX ou cartão, não inclui painel administrativo visual nem implantação de produção. O cliente pode consultar novamente o pedido pelo UUID na seção de acompanhamento, inclusive após recarregar a página, desde que tenha guardado o código.
