@@ -37,6 +37,12 @@ const transitions={
 const asId=z.number().int().positive();
 const routeId=z.coerce.number().int().positive();
 app.get('/api/health',(_req,res)=>res.json({status:'ok'}));
+app.get('/api/store',(_req,res)=>res.json({
+ accepting_orders:Boolean(db.prepare('SELECT accepting_orders FROM store_settings WHERE id=1').get()?.accepting_orders),
+ fulfillment_methods:['pickup','delivery'],
+ payment_methods:['pix','cash','debit','credit'],
+ currency:'BRL'
+}));
 app.get('/api/catalog',(_req,res)=>res.json({
  categories:db.prepare('SELECT id,name FROM categories WHERE active=1').all(),
  products:db.prepare('SELECT id,category_id,name,description,price_cents FROM products WHERE active=1').all(),
@@ -104,7 +110,7 @@ app.post('/api/orders',rateLimit({windowMs:15*60*1000,limit:15}),(req,res,next)=
 }catch(e){next(e)}});
 app.get('/api/orders/:publicId',(req,res,next)=>{try{
  const key=z.string().uuid().parse(req.params.publicId);
- const o=db.prepare('SELECT public_id,status,total_cents,created_at FROM orders WHERE public_id=?').get(key);
+ const o=db.prepare('SELECT public_id,status,subtotal_cents,discount_cents,delivery_fee_cents,total_cents,fulfillment,created_at FROM orders WHERE public_id=?').get(key);
  if(!o)return res.status(404).json({error:'Pedido não encontrado'});
  res.json(o);
 }catch(e){next(e)}});
