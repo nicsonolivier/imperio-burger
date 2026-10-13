@@ -113,3 +113,10 @@ test('login diferencia autenticação de falhas parciais no carregamento inicial
  assert.match(js,/if\(failed&&token\)/);
  assert.match(js,/Login realizado, mas alguns dados não carregaram/);
 });
+
+test('controle de abertura da loja é liberado após sucesso ou erro',()=>{
+ const start=js.indexOf("$('store-toggle').addEventListener('click'");
+ const end=js.indexOf('function makeToggle',start);
+ const handler=js.slice(start,end);
+ assert.match(handler,/finally\{button\.disabled=false\}/);
+});
