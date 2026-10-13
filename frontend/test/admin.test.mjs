@@ -55,3 +55,10 @@ test('painel permite editar produtos sem reativar produtos inativos',()=>{
  assert.match(js,/active:editingProduct\?Boolean\(editingProduct\.active\):true/);
  assert.match(js,/editingProduct=null/);
 });
+
+test('logout descarta edição de produto e limpa o formulário',()=>{
+ const logout=js.slice(js.indexOf('function logout(){'),js.indexOf('function displayOrders('));
+ assert.match(logout,/editingProduct=null/);
+ assert.match(logout,/\$\('product-form'\)\.reset\(\)/);
+ assert.match(logout,/\$\('product-cancel'\)\.hidden=true/);
+});
