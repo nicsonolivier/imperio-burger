@@ -172,3 +172,10 @@ test('respostas de autenticação sem JSON também encerram sessões expiradas',
  assert.ok(handler.indexOf('if(!response.ok)')<handler.indexOf("if(!data)throw Error('Resposta inválida do servidor')"));
  assert.match(handler,/data\?\.error/);
 });
+
+test('total de linha não duplica preços de adicionais já incluídos no unitário',()=>{
+ assert.match(js,/const addonsCents=\(item\.addons\|\|\[\]\)\.reduce/);
+ assert.match(js,/const basePrice=item\.unit_price_cents-addonsCents/);
+ assert.match(js,/const lineTotal=item\.unit_price_cents\*item\.quantity/);
+ assert.doesNotMatch(js,/const lineTotal=\(item\.unit_price_cents\+/);
+});
