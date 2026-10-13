@@ -65,7 +65,7 @@ $('login-form').addEventListener('submit',async event=>{
   token=result.token;
   $('login-view').hidden=true;$('dashboard').hidden=false;$('logout').hidden=false;
   $('login-message').textContent='';
-  await Promise.all([loadOrders(),loadStore(),loadCatalog()]);
+  await Promise.all([loadOrders(),loadStore(),loadCatalog(),loadCommercial()]);
  }catch(error){$('login-message').textContent=error.message;$('admin-message').textContent=error.message}
  finally{button.disabled=false}
 });
@@ -135,4 +135,51 @@ $('product-form').addEventListener('submit',async event=>{
   })});
   event.currentTarget.reset();await loadCatalog();$('admin-message').textContent='Produto criado.';
  }catch(error){$('admin-message').textContent=error.message}finally{button.disabled=false}
+});
+
+function parseCents(raw){
+ const value=Number(raw);
+ if(!Number.isFinite(value)||value<0||value>10000)throw Error('Valor monetário inválido');
+ return Math.round(value*100);
+}
+async function loadCommercial(){
+ const resources=[
+  {path:'addons',list:'addon-list',label:item=>item.name+' · '+money(item.price_cents)},
+  {path:'coupons',list:'coupon-list',label:item=>item.code+' · '+item.percent_off+'% de desconto'},
+  {path:'delivery-areas',list:'area-list',label:item=>item.name+' · '+money(item.fee_cents)}
+ ];
+ const responses=await Promise.all(resources.map(resource=>api('/admin/manage/'+resource.path)));
+ resources.forEach((resource,index)=>{
+  const container=$(resource.list);container.replaceChildren();
+  for(const item of responses[index].items){
+   const row=document.createElement('div');row.className='manage-row';
+   const label=document.createElement('span');label.textContent=resource.label(item)+(item.active?'':' (inativo)');
+   row.append(label,makeToggle(resource.path,item,loadCommercial));container.append(row);
+  }
+ });
+}
+function registerCommercialForm(formId,resource,build){
+ $(formId).addEventListener('submit',async event=>{
+  event.preventDefault();
+  const button=event.currentTarget.querySelector('button');button.disabled=true;
+  try{
+   const data=new FormData(event.currentTarget);
+   await api('/admin/manage/'+resource,{method:'POST',body:JSON.stringify(build(data))});
+   event.currentTarget.reset();await loadCommercial();
+   $('admin-message').textContent='Cadastro criado com sucesso.';
+  }catch(error){$('admin-message').textContent=error.message}finally{button.disabled=false}
+ });
+}
+registerCommercialForm('addon-form','addons',data=>({
+ name:data.get('name').trim(),price_cents:parseCents(data.get('price')),active:true
+}));
+registerCommercialForm('coupon-form','coupons',data=>({
+ code:data.get('code').trim().toUpperCase(),percent_off:Number(data.get('percent_off')),active:true
+}));
+registerCommercialForm('area-form','delivery-areas',data=>({
+ name:data.get('name').trim(),fee_cents:parseCents(data.get('fee')),active:true
+}));
+$('commercial-refresh').addEventListener('click',async()=>{
+ try{await loadCommercial();$('admin-message').textContent='Cadastros comerciais atualizados.'}
+ catch(error){$('admin-message').textContent=error.message}
 });
