@@ -1,7 +1,7 @@
 name: Frontend CI
 on:
   push:
-    branches: [main, develop/frontend]
+    branches: [main, 'develop/**']
   pull_request:
     branches: [main]
 jobs:
@@ -16,5 +16,6 @@ jobs:
         run: |
           node --check frontend/app.js
           node --check frontend/config.js
-      - name: Run frontend structure tests
+          node --check frontend/admin.js
+      - name: Run frontend and API contract tests
         run: node --test frontend/test/*.test.mjs
