@@ -129,3 +129,13 @@ test('painel permite editar adicionais sem alterar estado ativo',()=>{
  assert.match(js,/method:editing\?'PUT':'POST'/);
  assert.match(js,/function cancelAddonEdit\(\)/);
 });
+
+test('painel permite editar e cancelar cupons sem alterar ativação',()=>{
+ assert.match(html,/id="coupon-submit"/);
+ assert.match(html,/id="coupon-cancel"/);
+ assert.match(js,/editingCoupon=item/);
+ assert.match(js,/if\(editingCoupon\)/);
+ assert.match(js,/function cancelCouponEdit\(\)/);
+ assert.match(js,/resource==='coupons'\?editingCoupon:null/);
+ assert.match(js,/if\(editing\)payload\.active=Boolean\(editing\.active\)/);
+});

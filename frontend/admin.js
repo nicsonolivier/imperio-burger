@@ -8,6 +8,7 @@ let acceptingOrders=false;
 let categories=[];
 let editingProduct=null;
 let editingAddon=null;
+let editingCoupon=null;
 async function api(path,options={}){
  const sessionToken=token;
  const response=await fetch(API_BASE_URL+path,{...options,headers:{'content-type':'application/json',...(token?{authorization:'Bearer '+token}:{}),...options.headers}});
@@ -23,6 +24,8 @@ function logout(){
  acceptingOrders=false;
  editingProduct=null;
  editingAddon=null;
+ editingCoupon=null;
+ $('coupon-form').reset();$('coupon-submit').textContent='Criar cupom';$('coupon-cancel').hidden=true;
  $('addon-form').reset();$('addon-submit').textContent='Criar adicional';$('addon-cancel').hidden=true;
  $('product-form').reset();
  $('product-submit').textContent='Criar produto';
@@ -204,6 +207,7 @@ async function loadCommercial(){
  ];
  const responses=await Promise.all(resources.map(resource=>api('/admin/manage/'+resource.path)));
  if(editingAddon){const latest=responses[0].items.find(item=>item.id===editingAddon.id);if(latest)editingAddon=latest;else cancelAddonEdit();}
+ if(editingCoupon){const latest=responses[1].items.find(item=>item.id===editingCoupon.id);if(latest)editingCoupon=latest;else cancelCouponEdit();}
  resources.forEach((resource,index)=>{
   const container=$(resource.list);container.replaceChildren();
   for(const item of responses[index].items){
@@ -218,22 +222,33 @@ async function loadCommercial(){
      form.scrollIntoView({behavior:'smooth',block:'center'});
     });row.append(edit);
    }
+   if(resource.path==='coupons'){
+    const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';
+    edit.addEventListener('click',()=>{
+     editingCoupon=item;const form=$('coupon-form');form.elements.namedItem('code').value=item.code;
+     form.elements.namedItem('percent_off').value=item.percent_off;
+     $('coupon-submit').textContent='Salvar alterações';$('coupon-cancel').hidden=false;
+     form.scrollIntoView({behavior:'smooth',block:'center'});
+    });row.append(edit);
+   }
    row.append(label,makeToggle(resource.path,item,loadCommercial));container.append(row);
   }
  });
 }
 function cancelAddonEdit(){editingAddon=null;$('addon-form').reset();$('addon-submit').textContent='Criar adicional';$('addon-cancel').hidden=true;}
 $('addon-cancel').addEventListener('click',cancelAddonEdit);
+function cancelCouponEdit(){editingCoupon=null;$('coupon-form').reset();$('coupon-submit').textContent='Criar cupom';$('coupon-cancel').hidden=true;}
+$('coupon-cancel').addEventListener('click',cancelCouponEdit);
 function registerCommercialForm(formId,resource,build){
  $(formId).addEventListener('submit',async event=>{
   event.preventDefault();
   const button=event.currentTarget.querySelector('button');button.disabled=true;
   try{
    const data=new FormData(event.currentTarget);
-   const editing=resource==='addons'?editingAddon:null;
+   const editing=resource==='addons'?editingAddon:resource==='coupons'?editingCoupon:null;
    const payload=build(data);if(editing)payload.active=Boolean(editing.active);
    await api('/admin/manage/'+resource+(editing?'/'+editing.id:''),{method:editing?'PUT':'POST',body:JSON.stringify(payload)});
-   if(editing)cancelAddonEdit();else event.currentTarget.reset();
+   if(editing){if(resource==='addons')cancelAddonEdit();else cancelCouponEdit();}else event.currentTarget.reset();
    await loadCommercial();
    $('admin-message').textContent=editing?'Cadastro atualizado com sucesso.':'Cadastro criado com sucesso.';
   }catch(error){$('admin-message').textContent=error.message}finally{button.disabled=false}
