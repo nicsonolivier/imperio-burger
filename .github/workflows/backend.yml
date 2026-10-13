@@ -17,5 +17,12 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Validate scheduled backup script
+        run: |
+          bash -n scripts/backup-scheduled.sh
+          if env -u BACKUP_DIR -u DATABASE_PATH bash scripts/backup-scheduled.sh >/dev/null 2>&1; then
+            echo 'Backup script must reject missing configuration' >&2
+            exit 1
+          fi
       - name: Run integration tests
         run: npm test
