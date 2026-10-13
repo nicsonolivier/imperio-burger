@@ -84,7 +84,7 @@ $('login-form').addEventListener('submit',async event=>{
   $('login-view').hidden=true;$('dashboard').hidden=false;$('logout').hidden=false;
   $('login-message').textContent='';
   await Promise.all([loadOrders(),loadStore(),loadCatalog(),loadCommercial()]);
- }catch(error){$('login-message').textContent=error.message;$('admin-message').textContent=error.message}
+ }catch(error){$('login-message').textContent=error.message;$('admin-message').textContent=error.message;event.currentTarget.querySelector('[name="password"]').value=''}
  finally{button.disabled=false}
 });
 $('logout').addEventListener('click',logout);
