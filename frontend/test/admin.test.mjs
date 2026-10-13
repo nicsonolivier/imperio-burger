@@ -82,9 +82,9 @@ test('recarregar catálogo sincroniza estado do produto em edição',()=>{
 });
 
 test('painel detalha preços dos itens e adicionais de cada pedido',()=>{
- assert.match(js,/money\(item\.unit_price_cents\)/);
+ assert.match(js,/money\(basePrice\)/);
  assert.match(js,/money\(addon\.price_cents\)/);
- assert.match(js,/\(item\.unit_price_cents\+\(item\.addons\|\|\[\]\)\.reduce/);
+ assert.match(js,/const lineTotal=item\.unit_price_cents\*item\.quantity/);
  assert.match(js,/\*item\.quantity/);
  assert.match(js,/money\(lineTotal\)/);
 });
@@ -171,4 +171,11 @@ test('respostas de autenticação sem JSON também encerram sessões expiradas',
  assert.match(handler,/catch\{data=null\}/);
  assert.ok(handler.indexOf('if(!response.ok)')<handler.indexOf("if(!data)throw Error('Resposta inválida do servidor')"));
  assert.match(handler,/data\?\.error/);
+});
+
+test('total de linha não duplica preços de adicionais já incluídos no unitário',()=>{
+ assert.match(js,/const addonsCents=\(item\.addons\|\|\[\]\)\.reduce/);
+ assert.match(js,/const basePrice=item\.unit_price_cents-addonsCents/);
+ assert.match(js,/const lineTotal=item\.unit_price_cents\*item\.quantity/);
+ assert.doesNotMatch(js,/const lineTotal=\(item\.unit_price_cents\+/);
 });
