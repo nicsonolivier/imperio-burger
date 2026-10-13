@@ -118,5 +118,9 @@ test('edição do código de rastreamento invalida resposta pendente',()=>{
 });
 
 test('entrega indisponível sem regiões de entrega cadastradas',()=>{
- assert.match(js,/querySelector\('option\[value="delivery"\]'\)\.disabled=!state\.areas\.length/);
+ assert.match(js,/deliveryOption\.disabled=!state\.areas\.length/);
+});
+
+test('modalidade volta para retirada se entrega estiver indisponível',()=>{
+ assert.match(js,/if\(deliveryOption\.disabled&&\$\('fulfillment'\)\.value==='delivery'\)\$\('fulfillment'\)\.value='pickup'/);
 });
