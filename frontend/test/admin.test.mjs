@@ -94,3 +94,10 @@ test('painel mostra subtotal e total retornados pela API sem inferir descontos',
  assert.match(js,/money\(order\.total_cents\)/);
  assert.match(js,/items,summary,status/);
 });
+
+test('painel detalha desconto e taxa de entrega persistidos no pedido',()=>{
+ assert.match(js,/money\(order\.discount_cents\)/);
+ assert.match(js,/money\(order\.delivery_fee_cents\)/);
+ assert.match(js,/money\(order\.subtotal_cents\)/);
+ assert.match(js,/money\(order\.total_cents\)/);
+});
