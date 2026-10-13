@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const source=readFileSync(new URL('../config.js',import.meta.url),'utf8');
 function apiFor(hostname,origin){
- const context={window:{location:{hostname,origin}}};
+ const context={window:{location:{hostname,origin,port:new URL(origin).port}}};
  const code=source.replace('export const API_BASE_URL=','globalThis.API_BASE_URL=');
  vm.runInNewContext(code,context);
  return context.API_BASE_URL;
@@ -16,4 +16,8 @@ test('API local usa porta 3001',()=>{
 });
 test('produção usa API HTTPS na mesma origem',()=>{
  assert.equal(apiFor('loja.exemplo.com','https://loja.exemplo.com'),'https://loja.exemplo.com/api');
+});
+
+test('Docker Compose usa API pelo proxy local',()=>{
+ assert.equal(apiFor('localhost','http://localhost:8080'),'http://localhost:8080/api');
 });
