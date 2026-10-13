@@ -118,11 +118,13 @@ function makeToggle(resource,item,after){
 async function loadCatalog(){
  const [categoryData,productData]=await Promise.all([api('/admin/manage/categories'),api('/admin/manage/products')]);
  categories=categoryData.items;
+ const selectedCategory=$('product-category').value;
  $('product-category').replaceChildren();
  for(const category of categories.filter(c=>c.active||c.id===editingProduct?.category_id)){
   const option=document.createElement('option');option.value=String(category.id);option.textContent=category.name;
   $('product-category').append(option);
  }
+ if([...$('product-category').options].some(option=>option.value===selectedCategory))$('product-category').value=selectedCategory;
  $('category-list').replaceChildren();
  for(const category of categories){
   const row=document.createElement('div');row.className='manage-row';
