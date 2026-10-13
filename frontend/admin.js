@@ -7,6 +7,7 @@ let token=null;
 let acceptingOrders=false;
 let categories=[];
 let editingProduct=null;
+let editingCategory=null;
 let editingAddon=null;
 let editingCoupon=null;
 let editingArea=null;
@@ -24,6 +25,8 @@ function logout(){
  categories=[];
  acceptingOrders=false;
  editingProduct=null;
+ editingCategory=null;
+ $('category-form').reset();$('category-submit').textContent='Criar categoria';$('category-cancel').hidden=true;
  editingAddon=null;
  editingCoupon=null;
  editingArea=null;
@@ -133,6 +136,7 @@ function makeToggle(resource,item,after){
 async function loadCatalog(){
  const [categoryData,productData]=await Promise.all([api('/admin/manage/categories'),api('/admin/manage/products')]);
  categories=categoryData.items;
+ if(editingCategory){const latest=categories.find(category=>category.id===editingCategory.id);if(latest)editingCategory=latest;else cancelCategoryEdit();}
  if(editingProduct){
   const latest=productData.items.find(product=>product.id===editingProduct.id);
   if(latest)editingProduct=latest;
@@ -149,7 +153,13 @@ async function loadCatalog(){
  for(const category of categories){
   const row=document.createElement('div');row.className='manage-row';
   const name=document.createElement('span');name.textContent=category.name+(category.active?'':' (inativa)');
-  row.append(name,makeToggle('categories',category,loadCatalog));$('category-list').append(row);
+  const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';
+  edit.addEventListener('click',()=>{
+   editingCategory=category;$('category-form').elements.namedItem('name').value=category.name;
+   $('category-submit').textContent='Salvar alterações';$('category-cancel').hidden=false;
+   $('category-form').scrollIntoView({behavior:'smooth',block:'center'});
+  });
+  row.append(name,edit,makeToggle('categories',category,loadCatalog));$('category-list').append(row);
  }
  $('product-list').replaceChildren();
  for(const product of productData.items){
@@ -174,12 +184,15 @@ async function loadCatalog(){
  }
 }
 $('catalog-refresh').addEventListener('click',async()=>{try{await loadCatalog();$('admin-message').textContent='Cardápio atualizado.'}catch(error){$('admin-message').textContent=error.message}});
+function cancelCategoryEdit(){editingCategory=null;$('category-form').reset();$('category-submit').textContent='Criar categoria';$('category-cancel').hidden=true;}
+$('category-cancel').addEventListener('click',cancelCategoryEdit);
 $('category-form').addEventListener('submit',async event=>{
  event.preventDefault();const button=event.currentTarget.querySelector('button');button.disabled=true;
  try{
   const data=new FormData(event.currentTarget);
-  await api('/admin/manage/categories',{method:'POST',body:JSON.stringify({name:data.get('name').trim(),active:true})});
-  event.currentTarget.reset();await loadCatalog();$('admin-message').textContent='Categoria criada.';
+  const editing=editingCategory;
+  await api('/admin/manage/categories'+(editing?'/'+editing.id:''),{method:editing?'PUT':'POST',body:JSON.stringify({name:data.get('name').trim(),active:editing?Boolean(editing.active):true})});
+  cancelCategoryEdit();await loadCatalog();$('admin-message').textContent=editing?'Categoria atualizada.':'Categoria criada.';
  }catch(error){$('admin-message').textContent=error.message}finally{button.disabled=false}
 });
 $('product-cancel').addEventListener('click',()=>{editingProduct=null;$('product-form').reset();$('product-submit').textContent='Criar produto';$('product-cancel').hidden=true;loadCatalog().catch(error=>{$('admin-message').textContent=error.message})});
