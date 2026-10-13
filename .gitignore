@@ -1,0 +1,23 @@
+# Segredos e configuração local
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Banco SQLite e arquivos auxiliares
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+backend/data/
+data/
+
+# Dependências, caches e artefatos
+node_modules/
+**/node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+coverage/
