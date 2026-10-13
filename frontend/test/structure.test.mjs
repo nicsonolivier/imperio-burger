@@ -112,3 +112,7 @@ test('cardápio mostra mensagem quando não há produtos na categoria',()=>{
  assert.match(js,/Nosso cardápio está sendo preparado/);
  assert.match(css,/\.catalog-empty\{/);
 });
+
+test('edição do código de rastreamento invalida resposta pendente',()=>{
+ assert.match(js,/\$\('tracking-id'\)\.addEventListener\('input',\(\)=>\{\+\+trackingRequestId;\$\('tracking-result'\)\.textContent=''\}\)/);
+});
