@@ -125,6 +125,8 @@ async function init(){
    $('checkout').reset();
    $('checkout-message').replaceChildren();
    const message=document.createElement('span');message.textContent='Pedido recebido! Total: '+money(order.total_cents)+'. ';
+   ++trackingRequestId;
+   $('tracking-result').textContent='';
    $('tracking-id').value=order.order_id;
    const track=document.createElement('a');track.href='#tracking';track.textContent='Acompanhar pedido';track.addEventListener('click',()=>{showCart(false);trackOrder(order.order_id)});
    $('checkout-message').append(message,track);
