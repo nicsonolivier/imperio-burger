@@ -52,7 +52,13 @@ jobs:
         env:
           SMOKE_ADMIN_EMAIL: ci@example.com
           SMOKE_ADMIN_PASSWORD: ci-password-strong-for-testing
-        run: node deploy/smoke-test.mjs
+        run: |
+          node deploy/smoke-test.mjs | tee /tmp/imperio-smoke.log
+          grep '^SMOKE_ORDER_ID=' /tmp/imperio-smoke.log >> "$GITHUB_ENV"
+      - name: Validar backup do banco Docker
+        run: |
+          docker compose exec -T api node scripts/backup.js /tmp/imperio-backup.sqlite
+          docker compose exec -T api node scripts/verify-backup.mjs /tmp/imperio-backup.sqlite "$SMOKE_ORDER_ID"
       - name: Encerrar serviços
         if: always()
         run: docker compose down -v
