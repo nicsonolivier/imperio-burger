@@ -27,3 +27,11 @@ test('acompanhamento valida UUID e traduz status',()=>{
  assert.match(js,/statusLabels/);
  assert.match(js,/encodeURIComponent\(value\)/);
 });
+
+test('checkout bloqueia múltiplos envios simultâneos',()=>{
+ assert.match(js,/submitting:false/);
+ assert.match(js,/if\(!state\.cart\.length\|\|!state\.open\|\|state\.submitting\)return/);
+ assert.match(js,/state\.submitting=true/);
+ assert.match(js,/finally\{state\.submitting=false/);
+ assert.match(js,/!count\|\|!state\.open\|\|state\.submitting/);
+});
