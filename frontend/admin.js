@@ -20,6 +20,10 @@ function logout(){
  for(const id of ['orders','category-list','product-list','addon-list','coupon-list','area-list'])$(id).replaceChildren();
  categories=[];
  acceptingOrders=false;
+ editingProduct=null;
+ $('product-form').reset();
+ $('product-submit').textContent='Criar produto';
+ $('product-cancel').hidden=true;
  $('admin-message').textContent='';
  $('dashboard').hidden=true;$('login-view').hidden=false;$('logout').hidden=true;
  $('login-form').reset();
