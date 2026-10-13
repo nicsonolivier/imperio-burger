@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,rmSync} from 'node:fs';
+import {mkdtempSync,rmSync,copyFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
@@ -29,7 +29,6 @@ test('backup inclui transações em WAL e permite restaurar os dados',()=>{
   }finally{copy.close()}
   db.close();
   // Simula recuperação em outro arquivo SQLite, sem tocar no banco original.
-  const {copyFileSync}=await import('node:fs');
   copyFileSync(backup,restored);
   const recovered=new Database(restored,{readonly:true,fileMustExist:true});
   try{assert.equal(recovered.prepare('SELECT value FROM sample WHERE id=1').get().value,'pedido de teste')}
