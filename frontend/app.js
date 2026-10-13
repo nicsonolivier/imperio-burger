@@ -31,8 +31,8 @@ function renderCatalog(){
   const desc=document.createElement('p');desc.textContent=product.description||'Preparado com carinho.';
   const bottom=document.createElement('div');bottom.className='bottom';
   const price=document.createElement('span');price.className='price';price.textContent=money(product.price_cents);
-  const add=document.createElement('button');add.type='button';add.textContent='Adicionar';add.disabled=!state.open||state.submitting;
-  add.addEventListener('click',()=>{if(state.submitting)return;const existing=state.cart.find(x=>x.product_id===product.id);if(existing)existing.quantity=Math.min(30,existing.quantity+1);else state.cart.push({product_id:product.id,quantity:1,addon_ids:[]});renderCart();showCart(true)});
+  const add=document.createElement('button');add.type='button';add.textContent='Adicionar';add.disabled=!state.open||state.submitting||(state.cart.length>=30&&!state.cart.some(x=>x.product_id===product.id));
+  add.addEventListener('click',()=>{if(state.submitting)return;const existing=state.cart.find(x=>x.product_id===product.id);if(!existing&&state.cart.length>=30)return;if(existing)existing.quantity=Math.min(30,existing.quantity+1);else state.cart.push({product_id:product.id,quantity:1,addon_ids:[]});renderCart();showCart(true)});
   bottom.append(price,add);card.append(symbol,title,desc,bottom);$('products').append(card);
  }
 }
@@ -71,6 +71,7 @@ function renderCart(){
  $('delivery-fee').textContent=delivery?(area?money(fee):'Selecione a região'):money(0);
  $('total').textContent=money(subtotal+fee);
  $('submit-order').disabled=!count||!state.open||state.submitting;
+ renderCatalog();
 }
 function updateFulfillment(){
  if(state.submitting)return;

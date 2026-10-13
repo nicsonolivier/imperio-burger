@@ -61,3 +61,9 @@ test('formulário de checkout é bloqueado só depois da leitura do FormData',()
  assert.ok(read>=0&&lock>read&&unlock>lock);
  assert.match(js,/if\(state\.submitting\)return;\s*const delivery=/);
 });
+
+test('carrinho respeita limite de 30 linhas do backend',()=>{
+ assert.match(js,/state\.cart\.length>=30&&!state\.cart\.some\(x=>x\.product_id===product\.id\)/);
+ assert.match(js,/if\(!existing&&state\.cart\.length>=30\)return/);
+ assert.match(js,/\$\('submit-order'\)\.disabled=[^;]+;\s*renderCatalog\(\)/);
+});
