@@ -88,3 +88,9 @@ test('painel detalha preços dos itens e adicionais de cada pedido',()=>{
  assert.match(js,/\*item\.quantity/);
  assert.match(js,/money\(lineTotal\)/);
 });
+
+test('painel mostra subtotal e total retornados pela API sem inferir descontos',()=>{
+ assert.match(js,/money\(order\.subtotal_cents\)/);
+ assert.match(js,/money\(order\.total_cents\)/);
+ assert.match(js,/items,summary,status/);
+});
