@@ -26,16 +26,20 @@ const product=await request('/admin/manage/products','POST',{
  price_cents:2390,active:true
 },token);
 assert.equal(product.status,201);
+const addon=await request('/admin/manage/addons','POST',{
+ name:'Bacon Smoke',price_cents:400,active:true
+},token);
+assert.equal(addon.status,201);
 assert.equal((await request('/admin/store','PATCH',{accepting_orders:true},token)).status,200);
 const catalog=await request('/catalog');
 assert.ok(catalog.data.products.some(p=>p.id===product.data.id));
 const order=await request('/orders','POST',{
  customer_name:'Cliente Teste',customer_phone:'21999999999',
  fulfillment:'pickup',payment_method:'cash',
- items:[{product_id:product.data.id,quantity:2,addon_ids:[]}]
+ items:[{product_id:product.data.id,quantity:2,addon_ids:[addon.data.id]}]
 });
 assert.equal(order.status,201,JSON.stringify(order.data));
-assert.equal(order.data.total_cents,4780);
+assert.equal(order.data.total_cents,5580);
 assert.equal(order.data.delivery_fee_cents,0);
 const tracked=await request('/orders/'+order.data.order_id);
 assert.equal(tracked.status,200);
@@ -44,6 +48,11 @@ assert.equal('customer_phone' in tracked.data,false);
 const orders=await request('/admin/orders','GET',undefined,token);
 const saved=orders.data.orders.find(o=>o.public_id===order.data.order_id);
 assert.ok(saved);
+assert.equal(saved.items.length,1);
+assert.equal(saved.items[0].product_name,'Burger Smoke');
+assert.equal(saved.items[0].quantity,2);
+assert.equal(saved.items[0].addons.length,1);
+assert.equal(saved.items[0].addons[0].addon_name,'Bacon Smoke');
 assert.equal((await request('/admin/orders/'+saved.id+'/status','PATCH',{status:'confirmed'},token)).status,200);
 assert.equal((await request('/admin/orders/'+saved.id+'/status','PATCH',{status:'preparing'},token)).status,200);
 assert.equal((await request('/admin/orders/'+saved.id+'/status','PATCH',{status:'delivered'},token)).status,200);
