@@ -136,6 +136,16 @@ test('painel permite editar e cancelar cupons sem alterar ativação',()=>{
  assert.match(js,/editingCoupon=item/);
  assert.match(js,/if\(editingCoupon\)/);
  assert.match(js,/function cancelCouponEdit\(\)/);
- assert.match(js,/resource==='coupons'\?editingCoupon:null/);
+ assert.match(js,/resource==='coupons'\?editingCoupon:/);
+ assert.match(js,/if\(editing\)payload\.active=Boolean\(editing\.active\)/);
+});
+
+test('painel permite editar regiões e taxas de entrega preservando ativação',()=>{
+ assert.match(html,/id="area-submit"/);
+ assert.match(html,/id="area-cancel"/);
+ assert.match(js,/editingArea=item/);
+ assert.match(js,/if\(editingArea\)/);
+ assert.match(js,/function cancelAreaEdit\(\)/);
+ assert.match(js,/resource==='delivery-areas'\?editingArea:null/);
  assert.match(js,/if\(editing\)payload\.active=Boolean\(editing\.active\)/);
 });
