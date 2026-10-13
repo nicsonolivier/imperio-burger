@@ -149,3 +149,8 @@ test('contador do carrinho anuncia alterações para leitores de tela',()=>{
  assert.match(html,/id="cart-count" aria-live="polite" aria-atomic="true"/);
  assert.match(js,/\$\('cart-count'\)\.textContent=String\(count\)/);
 });
+
+test('checkout limpa erro anterior quando usuário corrige campos',()=>{
+ assert.match(js,/\$\('checkout'\)\.addEventListener\('input',\(\)=>\{if\(!state\.submitting\)\$\('checkout-message'\)\.textContent=''\}\)/);
+ assert.match(js,/\$\('checkout'\)\.addEventListener\('change',\(\)=>\{if\(!state\.submitting\)\$\('checkout-message'\)\.textContent=''\}\)/);
+});
