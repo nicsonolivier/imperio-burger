@@ -120,3 +120,12 @@ test('controle de abertura da loja é liberado após sucesso ou erro',()=>{
  const handler=js.slice(start,end);
  assert.match(handler,/finally\{button\.disabled=false\}/);
 });
+
+test('painel permite editar adicionais sem alterar estado ativo',()=>{
+ assert.match(html,/id="addon-submit"/);
+ assert.match(html,/id="addon-cancel"/);
+ assert.match(js,/editingAddon=item/);
+ assert.match(js,/if\(editing\)payload\.active=Boolean\(editing\.active\)/);
+ assert.match(js,/method:editing\?'PUT':'POST'/);
+ assert.match(js,/function cancelAddonEdit\(\)/);
+});

@@ -7,6 +7,7 @@ let token=null;
 let acceptingOrders=false;
 let categories=[];
 let editingProduct=null;
+let editingAddon=null;
 async function api(path,options={}){
  const sessionToken=token;
  const response=await fetch(API_BASE_URL+path,{...options,headers:{'content-type':'application/json',...(token?{authorization:'Bearer '+token}:{}),...options.headers}});
@@ -21,6 +22,8 @@ function logout(){
  categories=[];
  acceptingOrders=false;
  editingProduct=null;
+ editingAddon=null;
+ $('addon-form').reset();$('addon-submit').textContent='Criar adicional';$('addon-cancel').hidden=true;
  $('product-form').reset();
  $('product-submit').textContent='Criar produto';
  $('product-cancel').hidden=true;
@@ -200,24 +203,39 @@ async function loadCommercial(){
   {path:'delivery-areas',list:'area-list',label:item=>item.name+' · '+money(item.fee_cents)}
  ];
  const responses=await Promise.all(resources.map(resource=>api('/admin/manage/'+resource.path)));
+ if(editingAddon){const latest=responses[0].items.find(item=>item.id===editingAddon.id);if(latest)editingAddon=latest;else cancelAddonEdit();}
  resources.forEach((resource,index)=>{
   const container=$(resource.list);container.replaceChildren();
   for(const item of responses[index].items){
    const row=document.createElement('div');row.className='manage-row';
    const label=document.createElement('span');label.textContent=resource.label(item)+(item.active?'':' (inativo)');
+   if(resource.path==='addons'){
+    const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';
+    edit.addEventListener('click',()=>{
+     editingAddon=item;const form=$('addon-form');form.elements.namedItem('name').value=item.name;
+     form.elements.namedItem('price').value=(item.price_cents/100).toFixed(2);
+     $('addon-submit').textContent='Salvar alterações';$('addon-cancel').hidden=false;
+     form.scrollIntoView({behavior:'smooth',block:'center'});
+    });row.append(edit);
+   }
    row.append(label,makeToggle(resource.path,item,loadCommercial));container.append(row);
   }
  });
 }
+function cancelAddonEdit(){editingAddon=null;$('addon-form').reset();$('addon-submit').textContent='Criar adicional';$('addon-cancel').hidden=true;}
+$('addon-cancel').addEventListener('click',cancelAddonEdit);
 function registerCommercialForm(formId,resource,build){
  $(formId).addEventListener('submit',async event=>{
   event.preventDefault();
   const button=event.currentTarget.querySelector('button');button.disabled=true;
   try{
    const data=new FormData(event.currentTarget);
-   await api('/admin/manage/'+resource,{method:'POST',body:JSON.stringify(build(data))});
-   event.currentTarget.reset();await loadCommercial();
-   $('admin-message').textContent='Cadastro criado com sucesso.';
+   const editing=resource==='addons'?editingAddon:null;
+   const payload=build(data);if(editing)payload.active=Boolean(editing.active);
+   await api('/admin/manage/'+resource+(editing?'/'+editing.id:''),{method:editing?'PUT':'POST',body:JSON.stringify(payload)});
+   if(editing)cancelAddonEdit();else event.currentTarget.reset();
+   await loadCommercial();
+   $('admin-message').textContent=editing?'Cadastro atualizado com sucesso.':'Cadastro criado com sucesso.';
   }catch(error){$('admin-message').textContent=error.message}finally{button.disabled=false}
  });
 }
