@@ -31,8 +31,8 @@ function renderCatalog(){
   const desc=document.createElement('p');desc.textContent=product.description||'Preparado com carinho.';
   const bottom=document.createElement('div');bottom.className='bottom';
   const price=document.createElement('span');price.className='price';price.textContent=money(product.price_cents);
-  const add=document.createElement('button');add.type='button';add.textContent='Adicionar';add.disabled=!state.open;
-  add.addEventListener('click',()=>{const existing=state.cart.find(x=>x.product_id===product.id);if(existing)existing.quantity=Math.min(30,existing.quantity+1);else state.cart.push({product_id:product.id,quantity:1,addon_ids:[]});renderCart();showCart(true)});
+  const add=document.createElement('button');add.type='button';add.textContent='Adicionar';add.disabled=!state.open||state.submitting;
+  add.addEventListener('click',()=>{if(state.submitting)return;const existing=state.cart.find(x=>x.product_id===product.id);if(existing)existing.quantity=Math.min(30,existing.quantity+1);else state.cart.push({product_id:product.id,quantity:1,addon_ids:[]});renderCart();showCart(true)});
   bottom.append(price,add);card.append(symbol,title,desc,bottom);$('products').append(card);
  }
 }
@@ -52,14 +52,15 @@ function renderCart(){
    const extras=document.createElement('select');extras.setAttribute('aria-label','Adicionar extra para '+product.name);
    const empty=document.createElement('option');empty.value='';empty.textContent='Adicionar extra...';extras.append(empty);
    for(const addon of state.addons.filter(a=>!line.addon_ids.includes(a.id))){const option=document.createElement('option');option.value=String(addon.id);option.textContent=addon.name+' +'+money(addon.price_cents);extras.append(option)}
-   extras.addEventListener('change',()=>{if(extras.value&&line.addon_ids.length<12){line.addon_ids.push(Number(extras.value));renderCart()}});
+   extras.disabled=state.submitting;
+   extras.addEventListener('change',()=>{if(state.submitting)return;if(extras.value&&line.addon_ids.length<12){line.addon_ids.push(Number(extras.value));renderCart()}});
    details.append(extras);
-   for(const id of line.addon_ids){const addon=state.addons.find(a=>a.id===id);if(!addon)continue;const remove=document.createElement('button');remove.type='button';remove.textContent='✕ '+addon.name;remove.addEventListener('click',()=>{line.addon_ids=line.addon_ids.filter(x=>x!==id);renderCart()});details.append(remove)}
+   for(const id of line.addon_ids){const addon=state.addons.find(a=>a.id===id);if(!addon)continue;const remove=document.createElement('button');remove.type='button';remove.textContent='✕ '+addon.name;remove.disabled=state.submitting;remove.addEventListener('click',()=>{if(state.submitting)return;line.addon_ids=line.addon_ids.filter(x=>x!==id);renderCart()});details.append(remove)}
   }
   const actions=document.createElement('div');actions.className='cart-line-actions';
-  const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Remover unidade');minus.addEventListener('click',()=>{line.quantity--;if(line.quantity===0)state.cart=state.cart.filter(x=>x!==line);renderCart()});
+  const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Remover unidade');minus.disabled=state.submitting;minus.addEventListener('click',()=>{if(state.submitting)return;line.quantity--;if(line.quantity===0)state.cart=state.cart.filter(x=>x!==line);renderCart()});
   const quantity=document.createElement('span');quantity.textContent=String(line.quantity);
-  const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label','Adicionar unidade');plus.disabled=line.quantity>=30;plus.addEventListener('click',()=>{line.quantity++;renderCart()});
+  const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label','Adicionar unidade');plus.disabled=state.submitting||line.quantity>=30;plus.addEventListener('click',()=>{if(state.submitting)return;line.quantity++;renderCart()});
   actions.append(minus,quantity,plus);row.append(details,actions);$('cart-items').append(row);
  }
  if(!count){const empty=document.createElement('p');empty.textContent='Seu carrinho está vazio.';$('cart-items').append(empty)}
@@ -108,6 +109,7 @@ async function init(){
   event.preventDefault();
   if(!state.cart.length||!state.open||state.submitting)return;
   state.submitting=true;
+  renderCatalog();renderCart();
   const button=$('submit-order');button.disabled=true;
   $('checkout-message').textContent='Enviando pedido...';
   const data=new FormData(event.currentTarget);
@@ -125,7 +127,7 @@ async function init(){
    $('checkout-message').append(message,track);
 
   }catch(error){$('checkout-message').textContent=error.message}
-  finally{state.submitting=false;button.disabled=!state.open||!state.cart.length}
+  finally{state.submitting=false;renderCatalog();renderCart()}
  });
  try{
   const [store,catalog]=await Promise.all([api('/store'),api('/catalog')]);
