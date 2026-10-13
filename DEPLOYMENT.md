@@ -51,3 +51,8 @@ Antes de publicar, implemente rotina periódica de backup SQLite, retenção seg
 ## Auditoria de dependências
 
 O workflow `Security Audit` executa `npm audit --omit=dev --audit-level=high` em alterações de backend e sob demanda. Um resultado verde não substitui atualização periódica de dependências, análise de código, testes de autorização e monitoramento de vulnerabilidades. Falhas devem ser investigadas e corrigidas antes da publicação.
+
+
+## Validação de inicialização
+
+Em `NODE_ENV=production`, a API agora recusa iniciar sem `ADMIN_EMAIL`, `ADMIN_PASSWORD` (mínimo 12 caracteres) ou `CORS_ORIGIN` explícito. O estado inicial da loja permanece fechado (`accepting_orders=0`), mas bancos existentes preservam o último estado configurado; verifique-o antes de expor a aplicação.
