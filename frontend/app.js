@@ -121,7 +121,9 @@ async function init(){
   for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=true;
   try{
    const order=await api('/orders',{method:'POST',body:JSON.stringify(payload)});
-   state.cart=[];renderCart();
+   state.cart=[];
+   $('checkout').reset();
+   updateFulfillment();
    $('checkout-message').replaceChildren();
    const message=document.createElement('span');message.textContent='Pedido recebido! Total: '+money(order.total_cents)+'. ';
    $('tracking-id').value=order.order_id;
