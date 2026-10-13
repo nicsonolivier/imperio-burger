@@ -129,3 +129,12 @@ test('cliente recebe aviso quando entrega está indisponível',()=>{
  assert.match(html,/id="delivery-availability"[^>]*role="status" hidden/);
  assert.match(js,/\$\('delivery-availability'\)\.hidden=!deliveryOption\.disabled/);
 });
+
+test('carrinho é diálogo modal com foco de teclado contido',()=>{
+ assert.match(html,/role="dialog" aria-modal="true" aria-labelledby="cart-heading"/);
+ assert.match(html,/<h2 id="cart-heading">Seu pedido<\/h2>/);
+ assert.match(js,/event\.key!=='Tab'/);
+ assert.match(js,/event\.shiftKey/);
+ assert.match(js,/event\.preventDefault\(\);last\.focus\(\)/);
+ assert.match(js,/event\.preventDefault\(\);first\.focus\(\)/);
+});
