@@ -35,3 +35,10 @@ test('checkout bloqueia múltiplos envios simultâneos',()=>{
  assert.match(js,/finally\{state\.submitting=false/);
  assert.match(js,/!count\|\|!state\.open\|\|state\.submitting/);
 });
+
+test('rastreamento ignora respostas atrasadas de pedidos anteriores',()=>{
+ assert.match(js,/let trackingRequestId=0/);
+ assert.match(js,/const requestId=\+\+trackingRequestId/);
+ assert.match(js,/if\(requestId!==trackingRequestId\)return/);
+ assert.match(js,/if\(requestId===trackingRequestId\)/);
+});
