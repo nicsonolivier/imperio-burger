@@ -149,3 +149,10 @@ test('painel permite editar regiões e taxas de entrega preservando ativação',
  assert.match(js,/resource==='delivery-areas'\?editingArea:null/);
  assert.match(js,/if\(editing\)payload\.active=Boolean\(editing\.active\)/);
 });
+
+test('controles de ativação comercial são liberados após sucesso ou falha',()=>{
+ const start=js.indexOf('function makeToggle(');
+ const end=js.indexOf('async function loadCatalog',start);
+ const handler=js.slice(start,end);
+ assert.match(handler,/finally\{button\.disabled=false\}/);
+});

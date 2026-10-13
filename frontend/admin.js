@@ -126,7 +126,7 @@ function makeToggle(resource,item,after){
    await api('/admin/manage/'+resource+'/'+item.id+'/active',{method:'PATCH',body:JSON.stringify({active:!Boolean(item.active)})});
    $('admin-message').textContent='Cadastro atualizado.';
    await after();
-  }catch(error){$('admin-message').textContent=error.message;button.disabled=false}
+  }catch(error){$('admin-message').textContent=error.message}finally{button.disabled=false}
  });
  return button;
 }
