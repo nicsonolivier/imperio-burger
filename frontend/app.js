@@ -121,7 +121,8 @@ async function init(){
   for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=true;
   try{
    const order=await api('/orders',{method:'POST',body:JSON.stringify(payload)});
-   state.cart=[];renderCart();
+   state.cart=[];
+   $('checkout').reset();
    $('checkout-message').replaceChildren();
    const message=document.createElement('span');message.textContent='Pedido recebido! Total: '+money(order.total_cents)+'. ';
    $('tracking-id').value=order.order_id;
@@ -129,7 +130,7 @@ async function init(){
    $('checkout-message').append(message,track);
 
   }catch(error){$('checkout-message').textContent=error.message}
-  finally{state.submitting=false;for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=false;renderCatalog();renderCart()}
+  finally{state.submitting=false;for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=false;renderCatalog();updateFulfillment()}
  });
  try{
   const [store,catalog]=await Promise.all([api('/store'),api('/catalog')]);

@@ -51,7 +51,7 @@ test('carrinho não muda enquanto checkout está enviando pedido',()=>{
  assert.match(js,/plus\.disabled=state\.submitting\|\|line\.quantity>=30/);
  assert.match(js,/state\.submitting=true;\s*renderCatalog\(\);renderCart\(\)/);
  assert.match(js,/finally\{state\.submitting=false;for\(const field of/);
- assert.match(js,/field\.disabled=false;renderCatalog\(\);renderCart\(\)\}/);
+ assert.match(js,/field\.disabled=false;renderCatalog\(\);updateFulfillment\(\)\}/);
 });
 
 test('formulário de checkout é bloqueado só depois da leitura do FormData',()=>{
@@ -71,4 +71,11 @@ test('carrinho respeita limite de 30 linhas do backend',()=>{
 test('seleção de extras bloqueia o 13º adicional',()=>{
  assert.match(js,/extras\.disabled=state\.submitting\|\|line\.addon_ids\.length>=12/);
  assert.match(js,/if\(state\.submitting\|\|line\.addon_ids\.length>=12\)return/);
+});
+
+test('checkout limpa dados do comprador apenas após pedido aceito',()=>{
+ const accepted=js.indexOf("const order=await api('/orders',{method:'POST'");
+ const reset=js.indexOf("$('checkout').reset()");
+ assert.ok(accepted>=0&&reset>accepted);
+ assert.match(js,/finally\{state\.submitting=false;[^}]*updateFulfillment\(\)\}/);
 });
