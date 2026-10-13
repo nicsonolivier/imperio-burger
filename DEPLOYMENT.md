@@ -56,3 +56,11 @@ O workflow `Security Audit` executa `npm audit --omit=dev --audit-level=high` em
 ## Validação de inicialização
 
 Em `NODE_ENV=production`, a API agora recusa iniciar sem `ADMIN_EMAIL`, `ADMIN_PASSWORD` (mínimo 12 caracteres) ou `CORS_ORIGIN` explícito. O estado inicial da loja permanece fechado (`accepting_orders=0`), mas bancos existentes preservam o último estado configurado; verifique-o antes de expor a aplicação.
+
+
+## Sondas de disponibilidade
+
+- `GET /api/health`: confirma que o processo HTTP responde (`200`, `status: ok`), sem consultar o banco.
+- `GET /api/ready`: consulta a tabela de configuração da loja no SQLite e responde `200` (`status: ready`) quando o banco está acessível; caso contrário, responde `503` (`status: unavailable`).
+
+Use `/api/ready` para verificar prontidão antes de direcionar tráfego ao serviço. A sonda não confirma integrações de pagamento nem representa homologação comercial.
