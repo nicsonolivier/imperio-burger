@@ -138,3 +138,9 @@ test('carrinho é diálogo modal com foco de teclado contido',()=>{
  assert.match(js,/event\.preventDefault\(\);last\.focus\(\)/);
  assert.match(js,/event\.preventDefault\(\);first\.focus\(\)/);
 });
+
+test('controles de quantidade identificam produto para leitores de tela',()=>{
+ assert.match(js,/Remover uma unidade de '\+product\.name/);
+ assert.match(js,/Adicionar uma unidade de '\+product\.name/);
+ assert.match(js,/Quantidade de '\+product\.name\+': '\+line\.quantity/);
+});
