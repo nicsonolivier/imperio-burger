@@ -1,0 +1,30 @@
+# Execução de homologação com Docker Compose
+# Crie backend/.env a partir de backend/.env.example antes de iniciar.
+services:
+  api:
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      DATABASE_PATH: /data/imperio.sqlite
+      CORS_ORIGIN: http://localhost:8080
+    volumes:
+      - imperio_data:/data
+    expose:
+      - "3001"
+    restart: unless-stopped
+  web:
+    image: nginx:1.27-alpine
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+volumes:
+  imperio_data:
