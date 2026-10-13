@@ -106,6 +106,7 @@ async function trackOrder(id){
  }catch(error){if(requestId===trackingRequestId)$('tracking-result').textContent=error.message}
 }
 async function init(){
+ $('tracking-id').addEventListener('input',()=>{++trackingRequestId;$('tracking-result').textContent=''});
  $('tracking-form').addEventListener('submit',event=>{
   event.preventDefault();
   trackOrder($('tracking-id').value);
