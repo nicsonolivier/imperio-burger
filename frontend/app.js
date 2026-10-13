@@ -126,6 +126,8 @@ async function init(){
  });
  $('fulfillment').addEventListener('change',updateFulfillment);
  $('delivery-area').addEventListener('change',()=>{if(!state.submitting)renderCart()});
+ $('checkout').addEventListener('input',()=>{if(!state.submitting)$('checkout-message').textContent=''});
+ $('checkout').addEventListener('change',()=>{if(!state.submitting)$('checkout-message').textContent=''});
  $('checkout').addEventListener('submit',async event=>{
   event.preventDefault();
   if(!state.cart.length||!state.open||state.submitting)return;
