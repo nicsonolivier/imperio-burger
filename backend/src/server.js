@@ -44,6 +44,15 @@ const transitions={
 const asId=z.number().int().positive();
 const routeId=z.coerce.number().int().positive();
 app.get('/api/health',(_req,res)=>res.json({status:'ok'}));
+app.get('/api/ready',(_req,res)=>{
+ try{
+  const settings=db.prepare('SELECT accepting_orders FROM store_settings WHERE id=1').get();
+  if(!settings)return res.status(503).json({status:'unavailable'});
+  res.json({status:'ready'});
+ }catch{
+  res.status(503).json({status:'unavailable'});
+ }
+});
 app.get('/api/store',(_req,res)=>res.json({
  accepting_orders:Boolean(db.prepare('SELECT accepting_orders FROM store_settings WHERE id=1').get()?.accepting_orders),
  fulfillment_methods:['pickup','delivery'],
