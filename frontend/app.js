@@ -73,6 +73,7 @@ function renderCart(){
  $('submit-order').disabled=!count||!state.open||state.submitting;
 }
 function updateFulfillment(){
+ if(state.submitting)return;
  const delivery=$('fulfillment').value==='delivery';
  $('delivery-fields').hidden=!delivery;
  $('address').required=delivery;
@@ -104,11 +105,12 @@ async function init(){
  $('cart-close').addEventListener('click',()=>showCart(false));
  $('overlay').addEventListener('click',()=>showCart(false));
  $('fulfillment').addEventListener('change',updateFulfillment);
- $('delivery-area').addEventListener('change',renderCart);
+ $('delivery-area').addEventListener('change',()=>{if(!state.submitting)renderCart()});
  $('checkout').addEventListener('submit',async event=>{
   event.preventDefault();
   if(!state.cart.length||!state.open||state.submitting)return;
   state.submitting=true;
+  for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=true;
   renderCatalog();renderCart();
   const button=$('submit-order');button.disabled=true;
   $('checkout-message').textContent='Enviando pedido...';
@@ -127,7 +129,7 @@ async function init(){
    $('checkout-message').append(message,track);
 
   }catch(error){$('checkout-message').textContent=error.message}
-  finally{state.submitting=false;renderCatalog();renderCart()}
+  finally{state.submitting=false;for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=false;renderCatalog();renderCart()}
  });
  try{
   const [store,catalog]=await Promise.all([api('/store'),api('/catalog')]);
