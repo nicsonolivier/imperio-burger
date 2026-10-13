@@ -41,8 +41,9 @@ Abra `http://localhost:5500/admin.html`, entre com o administrador e **abra a lo
 5. Consulte novamente o UUID na loja e confirme o status atualizado.
 6. Crie uma região de entrega e um cupom; faça um pedido de **entrega** usando ambos e confira o valor retornado pelo servidor.
 7. Desative uma categoria; seus produtos devem desaparecer do catálogo público e não podem ser comprados.
-8. Feche a loja no painel e confira que novos pedidos são bloqueados.
-9. Teste login incorreto, UUID inexistente, endereço insuficiente e produto desativado.
+8. No painel administrativo, confira se o pedido mostra **nome do produto, quantidade e adicionais** (não apenas o total). Crie um adicional ativo e faça um pedido com duas unidades do produto e esse adicional; confira que o adicional aparece no pedido. Teste também um pedido sem adicionais.
+9. Feche a loja no painel e confira que novos pedidos são bloqueados.
+10. Teste login incorreto, UUID inexistente, endereço insuficiente e produto desativado.
 
 **Importante:** o total exibido antes de enviar o pedido é estimado; o backend determina o total definitivo. PIX e cartão são preferências registradas, não pagamentos processados.
 
@@ -51,3 +52,9 @@ Abra `http://localhost:5500/admin.html`, entre com o administrador e **abra a lo
 Todos os cenários acima devem passar, além dos testes de CI. Documente resultados, navegador, versão e eventuais falhas. Configure hospedagem HTTPS, backup persistente do SQLite, observabilidade e política de dados pessoais conforme `DEPLOYMENT.md`.
 
 A existência deste roteiro **não significa que a homologação manual foi executada**.
+
+## Evidências da conferência de itens
+
+Para cada pedido testado, registre: UUID (sem nome/telefone reais), quantidade comprada, nomes dos produtos, nomes dos adicionais, total retornado pela API, resultado no painel e status final. Não inclua credenciais nem dados pessoais em issues públicas.
+
+O fluxo automatizado equivalente está em `deploy/smoke-test.mjs` e é executado pelo workflow Docker Compose CI; a conferência visual continua sendo manual.
