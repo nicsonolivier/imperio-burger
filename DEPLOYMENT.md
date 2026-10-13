@@ -46,3 +46,8 @@ Este documento é um guia de preparação; não confirma publicação em hospeda
 ## Backups e recuperação
 
 Antes de publicar, implemente rotina periódica de backup SQLite, retenção segura e testes de restauração conforme `BACKUP.md`. O repositório fornece um comando manual, mas não executa backups automaticamente.
+
+
+## Auditoria de dependências
+
+O workflow `Security Audit` executa `npm audit --omit=dev --audit-level=high` em alterações de backend e sob demanda. Um resultado verde não substitui atualização periódica de dependências, análise de código, testes de autorização e monitoramento de vulnerabilidades. Falhas devem ser investigadas e corrigidas antes da publicação.
