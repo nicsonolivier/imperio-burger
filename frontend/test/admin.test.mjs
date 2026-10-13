@@ -74,3 +74,9 @@ test('preço de produto respeita limite e centavos do backend',()=>{
  assert.match(js,/Math\.abs\(price\*100-Math\.round\(price\*100\)\)>1e-7/);
  assert.match(js,/price_cents:Math\.round\(price\*100\)/);
 });
+
+test('recarregar catálogo sincroniza estado do produto em edição',()=>{
+ assert.match(js,/productData\.items\.find\(product=>product\.id===editingProduct\.id\)/);
+ assert.match(js,/if\(latest\)editingProduct=latest/);
+ assert.match(js,/else\{editingProduct=null/);
+});
