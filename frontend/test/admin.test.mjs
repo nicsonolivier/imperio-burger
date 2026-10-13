@@ -101,3 +101,9 @@ test('painel detalha desconto e taxa de entrega persistidos no pedido',()=>{
  assert.match(js,/money\(order\.subtotal_cents\)/);
  assert.match(js,/money\(order\.total_cents\)/);
 });
+
+test('valores comerciais rejeitam frações de centavo',()=>{
+ assert.match(js,/Math\.abs\(value\*100-Math\.round\(value\*100\)\)>1e-7/);
+ assert.match(js,/price_cents:parseCents\(data\.get\('price'\)\)/);
+ assert.match(js,/fee_cents:parseCents\(data\.get\('fee'\)\)/);
+});
