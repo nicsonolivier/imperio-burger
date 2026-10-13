@@ -2,7 +2,7 @@
 
 ## Arquitetura sugerida
 
-- **Frontend:** hospedagem estática com HTTPS, servindo o diretório `frontend/`. O arquivo `frontend/config.js` deve apontar para a URL HTTPS pública da API.
+- **Frontend:** hospedagem estática com HTTPS, servindo o diretório `frontend/`. O frontend usa `/api` na mesma origem em produção; configure o proxy reverso HTTPS para encaminhar `/api/*` ao backend. Para hospedar a API em domínio separado, edite `frontend/config.js` e configure `CORS_ORIGIN` com a origem do site.
 - **API:** serviço Node.js 22 com disco persistente montado. Diretório de trabalho `backend/`, comando `npm install --no-audit --no-fund && npm start`.
 - **Banco:** SQLite no disco persistente, fora do diretório publicado; configure `DATABASE_PATH=/data/imperio.sqlite`. **Não use armazenamento efêmero**: os pedidos seriam perdidos após reinicialização.
 - **Domínios:** separe frontend e API, configure HTTPS e `CORS_ORIGIN` com a origem exata do frontend (sem caminho nem barra final).
