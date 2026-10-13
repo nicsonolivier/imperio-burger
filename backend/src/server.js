@@ -139,7 +139,6 @@ app.get('/api/orders/:publicId',(req,res,next)=>{try{
 app.use('/api/admin/manage',auth,management);
 app.get('/api/admin/orders',auth,(_req,res)=>{
  const orders=db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 100').all();
- const items=db.prepare('SELECT id,product_name,quantity,unit_price_cents FROM order_items WHERE order_id=? ORDER BY id').all.bind(db.prepare('SELECT id,product_name,quantity,unit_price_cents FROM order_items WHERE order_id=? ORDER BY id'));
  const getItems=db.prepare('SELECT id,product_name,quantity,unit_price_cents FROM order_items WHERE order_id=? ORDER BY id');
  const getAddons=db.prepare('SELECT addon_name,price_cents FROM order_item_addons WHERE order_item_id=? ORDER BY id');
  for(const order of orders)order.items=getItems.all(order.id).map(item=>({...item,addons:getAddons.all(item.id)}));
