@@ -136,7 +136,7 @@ test('painel permite editar e cancelar cupons sem alterar ativação',()=>{
  assert.match(js,/editingCoupon=item/);
  assert.match(js,/if\(editingCoupon\)/);
  assert.match(js,/function cancelCouponEdit\(\)/);
- assert.match(js,/resource==='coupons'\?editingCoupon:null/);
+ assert.match(js,/resource==='coupons'\?editingCoupon:/);
  assert.match(js,/if\(editing\)payload\.active=Boolean\(editing\.active\)/);
 });
 
