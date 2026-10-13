@@ -91,7 +91,7 @@ test('novo pedido invalida rastreamento pendente de pedido antigo',()=>{
 test('carrinho acessível pode fechar com Escape e restaura foco',()=>{
  assert.match(html,/id="cart-toggle"[^>]*aria-controls="cart" aria-expanded="false"/);
  assert.match(js,/setAttribute\('aria-expanded',String\(open\)\)/);
- assert.match(js,/if\(open\)\$\('cart-close'\)\.focus\(\);else \$\('cart-toggle'\)\.focus\(\)/);
+ assert.match(js,/if\(open\)\$\('cart-close'\)\.focus\(\);else if\(\$\('cart'\)\.contains\(document\.activeElement\)\)\$\('cart-toggle'\)\.focus\(\)/);
  assert.match(js,/event\.key==='Escape'/);
 });
 
@@ -111,4 +111,8 @@ test('cardápio mostra mensagem quando não há produtos na categoria',()=>{
  assert.match(js,/Nenhum produto disponível nesta categoria/);
  assert.match(js,/Nosso cardápio está sendo preparado/);
  assert.match(css,/\.catalog-empty\{/);
+});
+
+test('edição do código de rastreamento invalida resposta pendente',()=>{
+ assert.match(js,/\$\('tracking-id'\)\.addEventListener\('input',\(\)=>\{\+\+trackingRequestId;\$\('tracking-result'\)\.textContent=''\}\)/);
 });
