@@ -73,6 +73,7 @@ function renderCart(){
  $('submit-order').disabled=!count||!state.open||state.submitting;
 }
 function updateFulfillment(){
+ if(state.submitting)return;
  const delivery=$('fulfillment').value==='delivery';
  $('delivery-fields').hidden=!delivery;
  $('address').required=delivery;
@@ -104,7 +105,7 @@ async function init(){
  $('cart-close').addEventListener('click',()=>showCart(false));
  $('overlay').addEventListener('click',()=>showCart(false));
  $('fulfillment').addEventListener('change',updateFulfillment);
- $('delivery-area').addEventListener('change',renderCart);
+ $('delivery-area').addEventListener('change',()=>{if(!state.submitting)renderCart()});
  $('checkout').addEventListener('submit',async event=>{
   event.preventDefault();
   if(!state.cart.length||!state.open||state.submitting)return;
@@ -117,6 +118,7 @@ async function init(){
   const payload={customer_name:data.get('customer_name'),customer_phone:data.get('customer_phone'),fulfillment,payment_method:data.get('payment_method'),items:state.cart.map(x=>({...x}))};
   if(fulfillment==='delivery'){payload.address=data.get('address');payload.delivery_area_id=Number(data.get('delivery_area_id'))}
   if(data.get('coupon')?.trim())payload.coupon=data.get('coupon').trim();
+  for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=true;
   try{
    const order=await api('/orders',{method:'POST',body:JSON.stringify(payload)});
    state.cart=[];renderCart();
@@ -127,7 +129,7 @@ async function init(){
    $('checkout-message').append(message,track);
 
   }catch(error){$('checkout-message').textContent=error.message}
-  finally{state.submitting=false;renderCatalog();renderCart()}
+  finally{state.submitting=false;for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=false;renderCatalog();renderCart()}
  });
  try{
   const [store,catalog]=await Promise.all([api('/store'),api('/catalog')]);
