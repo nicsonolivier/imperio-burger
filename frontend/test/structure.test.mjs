@@ -79,3 +79,11 @@ test('checkout limpa dados do comprador apenas após pedido aceito',()=>{
  assert.ok(accepted>=0&&reset>accepted);
  assert.match(js,/finally\{state\.submitting=false;[^}]*updateFulfillment\(\)\}/);
 });
+
+test('novo pedido invalida rastreamento pendente de pedido antigo',()=>{
+ const checkout=js.indexOf("const order=await api('/orders',{method:'POST'");
+ const invalidate=js.indexOf('++trackingRequestId;',checkout);
+ const clear=js.indexOf("$('tracking-result').textContent='';",checkout);
+ const newId=js.indexOf("$('tracking-id').value=order.order_id;",checkout);
+ assert.ok(checkout>=0&&invalidate>checkout&&clear>invalidate&&newId>clear);
+});
