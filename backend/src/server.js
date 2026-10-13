@@ -137,7 +137,14 @@ app.get('/api/orders/:publicId',(req,res,next)=>{try{
  res.json(o);
 }catch(e){next(e)}});
 app.use('/api/admin/manage',auth,management);
-app.get('/api/admin/orders',auth,(_req,res)=>res.json({orders:db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 100').all()}));
+app.get('/api/admin/orders',auth,(_req,res)=>{
+ const orders=db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 100').all();
+ const items=db.prepare('SELECT id,product_name,quantity,unit_price_cents FROM order_items WHERE order_id=? ORDER BY id').all.bind(db.prepare('SELECT id,product_name,quantity,unit_price_cents FROM order_items WHERE order_id=? ORDER BY id'));
+ const getItems=db.prepare('SELECT id,product_name,quantity,unit_price_cents FROM order_items WHERE order_id=? ORDER BY id');
+ const getAddons=db.prepare('SELECT addon_name,price_cents FROM order_item_addons WHERE order_item_id=? ORDER BY id');
+ for(const order of orders)order.items=getItems.all(order.id).map(item=>({...item,addons:getAddons.all(item.id)}));
+ res.json({orders});
+});
 app.get('/api/admin/audit',auth,(_req,res)=>res.json({events:db.prepare('SELECT id,admin_id,action,entity_type,entity_id,details,created_at FROM audit_logs ORDER BY id DESC LIMIT 100').all()}));
 app.post('/api/admin/privacy/anonymize',auth,(req,res,next)=>{try{
  const {older_than_days,dry_run}=z.object({older_than_days:z.number().int().min(30).max(3650),dry_run:z.boolean().default(true)}).strict().parse(req.body);
