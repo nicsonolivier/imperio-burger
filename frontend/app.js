@@ -1,7 +1,7 @@
 import {API_BASE_URL} from './config.js';
 const $=id=>document.getElementById(id);
 const money=cents=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(cents/100);
-const state={products:[],categories:[],addons:[],areas:[],cart:[],open:false,category:null};
+const state={products:[],categories:[],addons:[],areas:[],cart:[],open:false,category:null,submitting:false};
 async function api(path,options={}){
  const response=await fetch(API_BASE_URL+path,{...options,headers:{'content-type':'application/json',...options.headers}});
  let body;
@@ -69,7 +69,7 @@ function renderCart(){
  const fee=delivery&&area?area.fee_cents:0;
  $('delivery-fee').textContent=delivery?(area?money(fee):'Selecione a região'):money(0);
  $('total').textContent=money(subtotal+fee);
- $('submit-order').disabled=!count||!state.open;
+ $('submit-order').disabled=!count||!state.open||state.submitting;
 }
 function updateFulfillment(){
  const delivery=$('fulfillment').value==='delivery';
@@ -103,7 +103,8 @@ async function init(){
  $('delivery-area').addEventListener('change',renderCart);
  $('checkout').addEventListener('submit',async event=>{
   event.preventDefault();
-  if(!state.cart.length||!state.open)return;
+  if(!state.cart.length||!state.open||state.submitting)return;
+  state.submitting=true;
   const button=$('submit-order');button.disabled=true;
   $('checkout-message').textContent='Enviando pedido...';
   const data=new FormData(event.currentTarget);
@@ -121,7 +122,7 @@ async function init(){
    $('checkout-message').append(message,track);
 
   }catch(error){$('checkout-message').textContent=error.message}
-  finally{button.disabled=!state.open||!state.cart.length}
+  finally{state.submitting=false;button.disabled=!state.open||!state.cart.length}
  });
  try{
   const [store,catalog]=await Promise.all([api('/store'),api('/catalog')]);
