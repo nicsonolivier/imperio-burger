@@ -46,6 +46,12 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
  const login=await request('/api/admin/login','POST',{email:'test@example.com',password:'test-password-very-strong'});
  assert.equal(login.status,200);
  const token=login.data.token;
+ const loginHeaders=await fetch(base+'/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:'test@example.com',password:'test-password-very-strong'})});
+ assert.equal(loginHeaders.headers.get('cache-control'),'no-store');
+ const adminHeaders=await fetch(base+'/api/admin/orders',{headers:{authorization:'Bearer '+token}});
+ assert.equal(adminHeaders.headers.get('cache-control'),'no-store');
+ const publicHeaders=await fetch(base+'/api/catalog');
+ assert.notEqual(publicHeaders.headers.get('cache-control'),'no-store');
  const catalog=await request('/api/catalog');
  assert.equal(catalog.status,200);
  assert.ok(catalog.data.products.length>0);
