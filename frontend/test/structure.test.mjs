@@ -124,3 +124,8 @@ test('entrega indisponível sem regiões de entrega cadastradas',()=>{
 test('modalidade volta para retirada se entrega estiver indisponível',()=>{
  assert.match(js,/if\(deliveryOption\.disabled&&\$\('fulfillment'\)\.value==='delivery'\)\$\('fulfillment'\)\.value='pickup'/);
 });
+
+test('cliente recebe aviso quando entrega está indisponível',()=>{
+ assert.match(html,/id="delivery-availability"[^>]*role="status" hidden/);
+ assert.match(js,/\$\('delivery-availability'\)\.hidden=!deliveryOption\.disabled/);
+});
