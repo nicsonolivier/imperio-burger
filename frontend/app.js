@@ -10,6 +10,7 @@ async function api(path,options={}){
  return body;
 }
 function showCart(open){
+ $('cart').inert=!open;
  $('cart').classList.toggle('open',open);
  $('cart').setAttribute('aria-hidden',String(!open));
  $('cart-toggle').setAttribute('aria-expanded',String(open));
