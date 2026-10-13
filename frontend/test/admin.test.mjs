@@ -165,3 +165,10 @@ test('edição de categorias preserva ativação e permite cancelar',()=>{
  assert.match(js,/method:editing\?'PUT':'POST'/);
  assert.match(js,/active:editing\?Boolean\(editing\.active\):true/);
 });
+
+test('respostas de autenticação sem JSON também encerram sessões expiradas',()=>{
+ const handler=js.slice(js.indexOf('async function api('),js.indexOf('function logout(){'));
+ assert.match(handler,/catch\{data=null\}/);
+ assert.ok(handler.indexOf('if(!response.ok)')<handler.indexOf("if(!data)throw Error('Resposta inválida do servidor')"));
+ assert.match(handler,/data\?\.error/);
+});
