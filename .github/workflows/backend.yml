@@ -24,5 +24,17 @@ jobs:
             echo 'Backup script must reject missing configuration' >&2
             exit 1
           fi
+      - name: Test scheduled backup and restored data
+        run: |
+          temp_dir="$(mktemp -d)"
+          trap 'rm -rf "$temp_dir"' EXIT
+          export DATABASE_PATH="$temp_dir/source.sqlite"
+          export BACKUP_DIR="$temp_dir/backups"
+          node --input-type=module -e "import Database from 'better-sqlite3'; const db=new Database(process.env.DATABASE_PATH); db.exec('CREATE TABLE backup_probe (value TEXT NOT NULL)'); db.prepare('INSERT INTO backup_probe (value) VALUES (?)').run('verified'); db.close()"
+          bash scripts/backup-scheduled.sh
+          backup_file="$(find "$BACKUP_DIR" -maxdepth 1 -name 'imperio-*.sqlite' -type f -print -quit)"
+          test -n "$backup_file"
+          BACKUP_FILE="$backup_file" node --input-type=module -e "import Database from 'better-sqlite3'; const db=new Database(process.env.BACKUP_FILE,{readonly:true,fileMustExist:true}); if(db.prepare('SELECT value FROM backup_probe').get()?.value!=='verified')process.exit(1); db.close()"
+          test "$(stat -c '%a' "$backup_file")" = 600
       - name: Run integration tests
         run: npm test
