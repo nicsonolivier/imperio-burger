@@ -68,3 +68,9 @@ test('atualização do catálogo preserva a categoria selecionada no formulário
  assert.match(js,/option\.value===selectedCategory/);
  assert.match(js,/\$\('product-category'\)\.value=selectedCategory/);
 });
+
+test('preço de produto respeita limite e centavos do backend',()=>{
+ assert.match(js,/price>10000/);
+ assert.match(js,/Math\.abs\(price\*100-Math\.round\(price\*100\)\)>1e-7/);
+ assert.match(js,/price_cents:Math\.round\(price\*100\)/);
+});
