@@ -49,4 +49,5 @@ assert.equal((await request('/admin/orders/'+saved.id+'/status','PATCH',{status:
 assert.equal((await request('/admin/orders/'+saved.id+'/status','PATCH',{status:'delivered'},token)).status,200);
 assert.equal((await request('/orders/'+order.data.order_id)).data.status,'delivered');
 assert.equal((await request('/admin/store','PATCH',{accepting_orders:false},token)).status,200);
+console.log('SMOKE_ORDER_ID='+order.data.order_id);
 console.log('Smoke test: login, catálogo, checkout, rastreio e status aprovados.');
