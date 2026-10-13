@@ -153,6 +153,7 @@ async function init(){
   $('catalog-status').textContent=state.products.length+' produtos disponíveis';
   const deliveryOption=$('fulfillment').querySelector('option[value="delivery"]');
   deliveryOption.disabled=!state.areas.length;
+  $('delivery-availability').hidden=!deliveryOption.disabled;
   if(deliveryOption.disabled&&$('fulfillment').value==='delivery')$('fulfillment').value='pickup';
   $('delivery-area').replaceChildren();
   const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione sua região';$('delivery-area').append(placeholder);
