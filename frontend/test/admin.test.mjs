@@ -23,3 +23,10 @@ test('painel administra categorias e produtos com rotas protegidas',()=>{
  assert.match(js,/Math\.round\(price\*100\)/);
  assert.match(js,/\/active/);
 });
+
+test('painel permite gerir adicionais cupons e regiões de entrega',()=>{
+ for(const id of ['addon-form','coupon-form','area-form','addon-list','coupon-list','area-list','commercial-refresh'])assert.ok(html.includes('id="'+id+'"'),id);
+ for(const route of ['addons','coupons','delivery-areas'])assert.ok(js.includes(route),route);
+ assert.match(js,/function parseCents\(raw\)/);
+ assert.match(js,/registerCommercialForm/);
+});
