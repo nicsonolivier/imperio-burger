@@ -42,3 +42,13 @@ test('rastreamento ignora respostas atrasadas de pedidos anteriores',()=>{
  assert.match(js,/if\(requestId!==trackingRequestId\)return/);
  assert.match(js,/if\(requestId===trackingRequestId\)/);
 });
+
+test('carrinho não muda enquanto checkout está enviando pedido',()=>{
+ assert.match(js,/add\.disabled=!state\.open\|\|state\.submitting/);
+ assert.match(js,/extras\.disabled=state\.submitting/);
+ assert.match(js,/remove\.disabled=state\.submitting/);
+ assert.match(js,/minus\.disabled=state\.submitting/);
+ assert.match(js,/plus\.disabled=state\.submitting\|\|line\.quantity>=30/);
+ assert.match(js,/state\.submitting=true;\s*renderCatalog\(\);renderCart\(\)/);
+ assert.match(js,/finally\{state\.submitting=false;renderCatalog\(\);renderCart\(\)\}/);
+});
