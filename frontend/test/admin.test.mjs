@@ -50,7 +50,7 @@ test('falha de autenticação apaga a senha sem limpar o email',()=>{
 
 test('painel permite editar produtos sem reativar produtos inativos',()=>{
  for(const id of ['product-submit','product-cancel'])assert.ok(html.includes('id="'+id+'"'));
- assert.match(js,/editingProduct\?\/'\+editingProduct\.id/);
+ assert.ok(js.includes("editingProduct?'/'+editingProduct.id:''"));
  assert.match(js,/method:editingProduct\?'PUT':'POST'/);
  assert.match(js,/active:editingProduct\?Boolean\(editingProduct\.active\):true/);
  assert.match(js,/editingProduct=null/);
