@@ -6,6 +6,7 @@ const nextStatuses={received:['confirmed','cancelled'],confirmed:['preparing','c
 let token=null;
 let acceptingOrders=false;
 let categories=[];
+let editingProduct=null;
 async function api(path,options={}){
  const sessionToken=token;
  const response=await fetch(API_BASE_URL+path,{...options,headers:{'content-type':'application/json',...(token?{authorization:'Bearer '+token}:{}),...options.headers}});
@@ -114,7 +115,7 @@ async function loadCatalog(){
  const [categoryData,productData]=await Promise.all([api('/admin/manage/categories'),api('/admin/manage/products')]);
  categories=categoryData.items;
  $('product-category').replaceChildren();
- for(const category of categories.filter(c=>c.active)){
+ for(const category of categories.filter(c=>c.active||c.id===editingProduct?.category_id)){
   const option=document.createElement('option');option.value=String(category.id);option.textContent=category.name;
   $('product-category').append(option);
  }
@@ -129,7 +130,21 @@ async function loadCatalog(){
   const row=document.createElement('div');row.className='manage-row';
   const name=document.createElement('span');
   name.textContent=product.name+' · '+money(product.price_cents)+' · '+(categories.find(c=>c.id===product.category_id)?.name||'Sem categoria')+(product.active?'':' (inativo)');
-  row.append(name,makeToggle('products',product,loadCatalog));$('product-list').append(row);
+  const edit=document.createElement('button');edit.type='button';edit.textContent='Editar';
+  edit.addEventListener('click',()=>{
+   editingProduct=product;
+   const form=$('product-form');form.elements.namedItem('name').value=product.name;
+   form.elements.namedItem('description').value=product.description||'';
+   form.elements.namedItem('price').value=(product.price_cents/100).toFixed(2);
+   $('product-category').replaceChildren();
+   for(const category of categories.filter(c=>c.active||c.id===product.category_id)){
+    const option=document.createElement('option');option.value=String(category.id);option.textContent=category.name;$('product-category').append(option);
+   }
+   $('product-category').value=String(product.category_id);
+   $('product-submit').textContent='Salvar alterações';$('product-cancel').hidden=false;
+   form.scrollIntoView({behavior:'smooth',block:'center'});
+  });
+  row.append(name,edit,makeToggle('products',product,loadCatalog));$('product-list').append(row);
  }
 }
 $('catalog-refresh').addEventListener('click',async()=>{try{await loadCatalog();$('admin-message').textContent='Cardápio atualizado.'}catch(error){$('admin-message').textContent=error.message}});
@@ -141,17 +156,18 @@ $('category-form').addEventListener('submit',async event=>{
   event.currentTarget.reset();await loadCatalog();$('admin-message').textContent='Categoria criada.';
  }catch(error){$('admin-message').textContent=error.message}finally{button.disabled=false}
 });
+$('product-cancel').addEventListener('click',()=>{editingProduct=null;$('product-form').reset();$('product-submit').textContent='Criar produto';$('product-cancel').hidden=true;loadCatalog().catch(error=>{$('admin-message').textContent=error.message})});
 $('product-form').addEventListener('submit',async event=>{
  event.preventDefault();const button=event.currentTarget.querySelector('button');button.disabled=true;
  try{
   const data=new FormData(event.currentTarget);
   const price=Number(data.get('price'));
   if(!Number.isFinite(price)||price<0)throw Error('Preço inválido');
-  await api('/admin/manage/products',{method:'POST',body:JSON.stringify({
+  await api('/admin/manage/products'+(editingProduct?'/'+editingProduct.id:''),{method:editingProduct?'PUT':'POST',body:JSON.stringify({
    category_id:Number(data.get('category_id')),name:data.get('name').trim(),
-   description:data.get('description').trim(),price_cents:Math.round(price*100),active:true
+   description:data.get('description').trim(),price_cents:Math.round(price*100),active:editingProduct?Boolean(editingProduct.active):true
   })});
-  event.currentTarget.reset();await loadCatalog();$('admin-message').textContent='Produto criado.';
+  const updated=Boolean(editingProduct);editingProduct=null;event.currentTarget.reset();$('product-submit').textContent='Criar produto';$('product-cancel').hidden=true;await loadCatalog();$('admin-message').textContent=updated?'Produto atualizado.':'Produto criado.';
  }catch(error){$('admin-message').textContent=error.message}finally{button.disabled=false}
 });
 
