@@ -87,3 +87,10 @@ test('novo pedido invalida rastreamento pendente de pedido antigo',()=>{
  const newId=js.indexOf("$('tracking-id').value=order.order_id;",checkout);
  assert.ok(checkout>=0&&invalidate>checkout&&clear>invalidate&&newId>clear);
 });
+
+test('carrinho acessível pode fechar com Escape e restaura foco',()=>{
+ assert.match(html,/id="cart-toggle"[^>]*aria-controls="cart" aria-expanded="false"/);
+ assert.match(js,/setAttribute\('aria-expanded',String\(open\)\)/);
+ assert.match(js,/if\(open\)\$\('cart-close'\)\.focus\(\);else \$\('cart-toggle'\)\.focus\(\)/);
+ assert.match(js,/event\.key==='Escape'/);
+});
