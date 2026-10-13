@@ -14,7 +14,7 @@ function showCart(open){
  $('cart').classList.toggle('open',open);
  $('cart').setAttribute('aria-hidden',String(!open));
  $('cart-toggle').setAttribute('aria-expanded',String(open));
- if(open)$('cart-close').focus();else $('cart-toggle').focus();
+ if(open)$('cart-close').focus();else if($('cart').contains(document.activeElement))$('cart-toggle').focus();
  $('overlay').hidden=!open;
 }
 function renderCatalog(){
