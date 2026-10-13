@@ -80,3 +80,11 @@ test('recarregar catálogo sincroniza estado do produto em edição',()=>{
  assert.match(js,/if\(latest\)editingProduct=latest/);
  assert.match(js,/else\{editingProduct=null/);
 });
+
+test('painel detalha preços dos itens e adicionais de cada pedido',()=>{
+ assert.match(js,/money\(item\.unit_price_cents\)/);
+ assert.match(js,/money\(addon\.price_cents\)/);
+ assert.match(js,/\(item\.unit_price_cents\+\(item\.addons\|\|\[\]\)\.reduce/);
+ assert.match(js,/\*item\.quantity/);
+ assert.match(js,/money\(lineTotal\)/);
+});

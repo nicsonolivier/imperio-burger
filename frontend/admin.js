@@ -58,11 +58,14 @@ function displayOrders(orders){
    const li=document.createElement('li');
    const product=document.createElement('strong');product.textContent=item.quantity+'× '+item.product_name;
    li.append(product);
+   const unitPrice=document.createElement('span');unitPrice.textContent=' · '+money(item.unit_price_cents)+' cada';li.append(unitPrice);
    for(const addon of item.addons||[]){
     const detail=document.createElement('span');
-    detail.textContent=' + '+addon.addon_name;
+    detail.textContent=' + '+addon.addon_name+' ('+money(addon.price_cents)+')';
     li.append(detail);
    }
+   const lineTotal=(item.unit_price_cents+(item.addons||[]).reduce((sum,addon)=>sum+addon.price_cents,0))*item.quantity;
+   const lineAmount=document.createElement('strong');lineAmount.textContent=' · Total: '+money(lineTotal);li.append(lineAmount);
    items.append(li);
   }
   card.append(top,customer,delivery,time,items,status);$('orders').append(card);
