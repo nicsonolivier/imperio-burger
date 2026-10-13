@@ -16,6 +16,12 @@ if(process.env.NODE_ENV==='production'){
   throw Error('Produção exige ADMIN_EMAIL e ADMIN_PASSWORD com senha de 12+ caracteres');
  if(!process.env.CORS_ORIGIN?.trim())
   throw Error('Produção exige CORS_ORIGIN explícito');
+ for(const origin of process.env.CORS_ORIGIN.split(',').map(value=>value.trim())){
+  let parsed;
+  try{parsed=new URL(origin)}catch{throw Error('CORS_ORIGIN deve conter origens HTTPS válidas')}
+  if(!origin||parsed.origin!==origin||!(['https:'].includes(parsed.protocol)||(parsed.protocol==='http:'&&['localhost','127.0.0.1'].includes(parsed.hostname)))||parsed.username||parsed.password)
+   throw Error('Produção exige origens HTTPS (ou HTTP loopback local) em CORS_ORIGIN');
+ }
 }
 initAdmin();
 const app=express();

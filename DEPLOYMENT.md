@@ -64,3 +64,8 @@ Em `NODE_ENV=production`, a API agora recusa iniciar sem `ADMIN_EMAIL`, `ADMIN_P
 - `GET /api/ready`: consulta a tabela de configuração da loja no SQLite e responde `200` (`status: ready`) quando o banco está acessível; caso contrário, responde `503` (`status: unavailable`).
 
 Use `/api/ready` para verificar prontidão antes de direcionar tráfego ao serviço. A sonda não confirma integrações de pagamento nem representa homologação comercial.
+
+
+## Validação de origens CORS
+
+Em produção, `CORS_ORIGIN` aceita uma ou mais origens completas separadas por vírgulas, usando HTTPS e sem caminho (ex.: `https://loja.exemplo.com`). `*`, caminhos e HTTP público são rejeitados na inicialização. Para homologação exclusivamente local, HTTP em `localhost` ou `127.0.0.1` é permitido; não exponha esse ambiente à internet.
