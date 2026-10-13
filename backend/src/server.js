@@ -33,6 +33,8 @@ app.use(cors({origin:(origin,cb)=>cb(null,!origin||allow.includes(origin))}));
 app.use(express.json({limit:'32kb'}));
 // Respostas administrativas incluem tokens e dados pessoais: nunca armazenar em caches.
 app.use('/api/admin',(_req,res,next)=>{res.set('Cache-Control','no-store');next()});
+// Pedidos e rastreamento exibem informações específicas do cliente e não devem ser armazenados em cache.
+app.use('/api/orders',(_req,res,next)=>{res.set('Cache-Control','no-store');next()});
 app.use('/api',rateLimit({windowMs:15*60*1000,limit:120,standardHeaders:'draft-7',legacyHeaders:false}));
 const auth=(req,res,next)=>{
  const token=/^Bearer (.+)$/.exec(req.headers.authorization||'')?.[1];
