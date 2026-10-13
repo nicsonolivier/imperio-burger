@@ -52,3 +52,11 @@ test('carrinho não muda enquanto checkout está enviando pedido',()=>{
  assert.match(js,/state\.submitting=true;\s*renderCatalog\(\);renderCart\(\)/);
  assert.match(js,/finally\{state\.submitting=false;renderCatalog\(\);renderCart\(\)\}/);
 });
+
+test('formulário de checkout é bloqueado só depois da leitura do FormData',()=>{
+ const read=js.indexOf('const data=new FormData(event.currentTarget)');
+ const lock=js.indexOf("for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=true");
+ const unlock=js.indexOf("for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=false");
+ assert.ok(read>=0&&lock>read&&unlock>lock);
+ assert.match(js,/if\(state\.submitting\)return;\s*const delivery=/);
+});
