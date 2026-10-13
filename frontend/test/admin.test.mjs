@@ -16,3 +16,10 @@ test('token permanece apenas na memória e conteúdo de pedidos usa texto seguro
  assert.match(js,/textContent/);
  assert.match(js,/function logout\(\)/);
 });
+
+test('painel administra categorias e produtos com rotas protegidas',()=>{
+ for(const id of ['category-form','product-form','category-list','product-list','product-category','catalog-refresh'])assert.ok(html.includes('id="'+id+'"'),id);
+ for(const route of ['/admin/manage/categories','/admin/manage/products'])assert.ok(js.includes(route),route);
+ assert.match(js,/Math\.round\(price\*100\)/);
+ assert.match(js,/\/active/);
+});
