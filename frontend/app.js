@@ -12,6 +12,8 @@ async function api(path,options={}){
 function showCart(open){
  $('cart').classList.toggle('open',open);
  $('cart').setAttribute('aria-hidden',String(!open));
+ $('cart-toggle').setAttribute('aria-expanded',String(open));
+ if(open)$('cart-close').focus();else $('cart-toggle').focus();
  $('overlay').hidden=!open;
 }
 function renderCatalog(){
@@ -104,6 +106,7 @@ async function init(){
  $('cart-toggle').addEventListener('click',()=>showCart(true));
  $('cart-close').addEventListener('click',()=>showCart(false));
  $('overlay').addEventListener('click',()=>showCart(false));
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('cart').classList.contains('open'))showCart(false)});
  $('fulfillment').addEventListener('change',updateFulfillment);
  $('delivery-area').addEventListener('change',()=>{if(!state.submitting)renderCart()});
  $('checkout').addEventListener('submit',async event=>{
