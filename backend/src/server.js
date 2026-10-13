@@ -74,7 +74,7 @@ app.post('/api/orders',rateLimit({windowMs:15*60*1000,limit:15}),(req,res,next)=
  const result=db.transaction(()=>{
  let subtotal=0;
  const lines=input.items.map(line=>{
- const p=db.prepare('SELECT id,name,price_cents FROM products WHERE id=? AND active=1').get(line.product_id);
+ const p=db.prepare('SELECT p.id,p.name,p.price_cents FROM products p JOIN categories c ON c.id=p.category_id WHERE p.id=? AND p.active=1 AND c.active=1').get(line.product_id);
  if(!p)throw Object.assign(new Error('Produto indisponível'),{status:400});
  if(new Set(line.addon_ids).size!==line.addon_ids.length)throw Object.assign(new Error('Adicionais repetidos'),{status:400});
  const addons=line.addon_ids.map(id=>db.prepare('SELECT id,name,price_cents FROM addons WHERE id=? AND active=1').get(id));
