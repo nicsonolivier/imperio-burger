@@ -7,9 +7,11 @@ let token=null;
 let acceptingOrders=false;
 let categories=[];
 async function api(path,options={}){
+ const sessionToken=token;
  const response=await fetch(API_BASE_URL+path,{...options,headers:{'content-type':'application/json',...(token?{authorization:'Bearer '+token}:{}),...options.headers}});
  let data;try{data=await response.json()}catch{throw Error('Resposta inválida do servidor')}
- if(!response.ok){if(token&&(response.status===401||response.status===403)){logout();$('login-message').textContent='Sessão encerrada. Entre novamente.'}throw Error(data.error||'Requisição recusada')}
+ if(sessionToken!==token)throw Error('Sessão alterada. Atualize após entrar novamente.');
+ if(!response.ok){if(sessionToken&&(response.status===401||response.status===403)){logout();$('login-message').textContent='Sessão encerrada. Entre novamente.'}throw Error(data.error||'Requisição recusada')}
  return data;
 }
 function logout(){
