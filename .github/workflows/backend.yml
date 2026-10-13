@@ -36,6 +36,15 @@ jobs:
           test -n "$backup_file"
           BACKUP_FILE="$backup_file" node --input-type=module -e "import Database from 'better-sqlite3'; const db=new Database(process.env.BACKUP_FILE,{readonly:true,fileMustExist:true}); if(db.prepare('SELECT value FROM backup_probe').get()?.value!=='verified')process.exit(1); db.close()"
           test "$(stat -c '%a' "$backup_file")" = 600
+          test "$(stat -c '%a' "$BACKUP_DIR")" = 700
+          (
+            flock -x 9
+            if bash scripts/backup-scheduled.sh >"$temp_dir/locked.log" 2>&1; then
+              echo 'Concurrent backup should fail when lock is held' >&2
+              exit 1
+            fi
+            grep -q 'Outro backup já está em execução' "$temp_dir/locked.log"
+          ) 9>"$BACKUP_DIR/.backup.lock"
           if BACKUP_DIR="$temp_dir" DATABASE_PATH="$temp_dir/source.sqlite" bash scripts/backup-scheduled.sh >/dev/null 2>&1; then
             echo 'Backup directory containing source database must be rejected' >&2
             exit 1
