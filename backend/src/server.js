@@ -13,6 +13,7 @@ import {management} from './management.js';
 if(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32)throw Error('Configure JWT_SECRET com no mínimo 32 caracteres');
 initAdmin();
 const app=express();
+if(process.env.NODE_ENV==='production')app.set('trust proxy',1);
 app.disable('x-powered-by');
 app.use(helmet());
 const allow=(process.env.CORS_ORIGIN||'').split(',').map(s=>s.trim()).filter(Boolean);
