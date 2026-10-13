@@ -184,7 +184,7 @@ test('atualização de status exige seleção explícita',()=>{
  assert.match(js,/placeholder\.textContent='Selecione o novo status'/);
  assert.match(js,/placeholder\.disabled=true;placeholder\.selected=true/);
  assert.match(js,/save\.disabled=true;\s*select\.addEventListener\('change'/);
- assert.match(js,/if\(!select\.value\)return;save\.disabled=true/);
+ assert.match(js,/if\(!select\.value\|\|select\.disabled\)return;save\.disabled=true/);
 });
 
 test('atualização de status bloqueia interação durante requisição',()=>{
