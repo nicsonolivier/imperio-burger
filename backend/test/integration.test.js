@@ -37,6 +37,8 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
   await new Promise(resolve=>setTimeout(resolve,100));
  }
  assert.ok(ready,'API não iniciou: '+stderr);
+ const storeHeaders=await fetch(base+'/api/store');
+ assert.equal(storeHeaders.headers.get('cache-control'),'no-store');
  const storeClosed=await request('/api/store');
  assert.equal(storeClosed.status,200);
  assert.equal(storeClosed.data.accepting_orders,false);
