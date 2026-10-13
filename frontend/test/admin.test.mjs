@@ -32,7 +32,7 @@ test('painel permite gerir adicionais cupons e regiões de entrega',()=>{
 });
 
 test('sessão expirada limpa dados sensíveis e login inválido não dispara logout',()=>{
- assert.match(js,/if\(token&&\(response\.status===401\|\|response\.status===403\)\)/);
+ assert.match(js,/if\(sessionToken&&\(response\.status===401\|\|response\.status===403\)\)/);
  assert.match(js,/for\(const id of \['orders','category-list','product-list','addon-list','coupon-list','area-list'\]\)/);
  assert.match(js,/categories=\[\]/);
  assert.match(js,/Sessão encerrada\. Entre novamente\./);
