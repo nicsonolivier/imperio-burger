@@ -66,9 +66,9 @@ function renderCart(){
    for(const id of line.addon_ids){const addon=state.addons.find(a=>a.id===id);if(!addon)continue;const remove=document.createElement('button');remove.type='button';remove.textContent='✕ '+addon.name;remove.disabled=state.submitting;remove.addEventListener('click',()=>{if(state.submitting)return;line.addon_ids=line.addon_ids.filter(x=>x!==id);renderCart()});details.append(remove)}
   }
   const actions=document.createElement('div');actions.className='cart-line-actions';
-  const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Remover unidade');minus.disabled=state.submitting;minus.addEventListener('click',()=>{if(state.submitting)return;line.quantity--;if(line.quantity===0)state.cart=state.cart.filter(x=>x!==line);renderCart()});
-  const quantity=document.createElement('span');quantity.textContent=String(line.quantity);
-  const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label','Adicionar unidade');plus.disabled=state.submitting||line.quantity>=30;plus.addEventListener('click',()=>{if(state.submitting)return;line.quantity++;renderCart()});
+  const minus=document.createElement('button');minus.type='button';minus.textContent='−';minus.setAttribute('aria-label','Remover uma unidade de '+product.name);minus.disabled=state.submitting;minus.addEventListener('click',()=>{if(state.submitting)return;line.quantity--;if(line.quantity===0)state.cart=state.cart.filter(x=>x!==line);renderCart()});
+  const quantity=document.createElement('span');quantity.textContent=String(line.quantity);quantity.setAttribute('aria-label','Quantidade de '+product.name+': '+line.quantity);
+  const plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label','Adicionar uma unidade de '+product.name);plus.disabled=state.submitting||line.quantity>=30;plus.addEventListener('click',()=>{if(state.submitting)return;line.quantity++;renderCart()});
   actions.append(minus,quantity,plus);row.append(details,actions);$('cart-items').append(row);
  }
  if(!count){const empty=document.createElement('p');empty.textContent='Seu carrinho está vazio.';$('cart-items').append(empty)}
