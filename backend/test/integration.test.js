@@ -53,7 +53,7 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
  const adminHeaders=await fetch(base+'/api/admin/orders',{headers:{authorization:'Bearer '+token}});
  assert.equal(adminHeaders.headers.get('cache-control'),'no-store');
  const publicHeaders=await fetch(base+'/api/catalog');
- assert.notEqual(publicHeaders.headers.get('cache-control'),'no-store');
+ assert.equal(publicHeaders.headers.get('cache-control'),'no-store');
  const orderHeaders=await fetch(base+'/api/orders/00000000-0000-4000-8000-000000000000');
  assert.equal(orderHeaders.headers.get('cache-control'),'no-store');
  const catalog=await request('/api/catalog');
