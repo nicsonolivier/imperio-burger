@@ -99,3 +99,9 @@ test('carrinho fechado não permite navegação por teclado em controles ocultos
  assert.match(html,/<aside id="cart"[^>]*aria-hidden="true" inert>/);
  assert.match(js,/\$\('cart'\)\.inert=!open/);
 });
+
+test('atalho de teclado permite pular direto ao cardápio',()=>{
+ assert.match(html,/<a class="skip-link" href="#cardapio">Ir direto ao cardápio<\/a>/);
+ assert.match(css,/\.skip-link:focus\{/);
+ assert.match(css,/:focus-visible\{/);
+});
