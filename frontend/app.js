@@ -27,7 +27,13 @@ function renderCatalog(){
   $('categories').append(button);
  }
  $('products').replaceChildren();
- for(const product of state.products.filter(p=>state.category===null||p.category_id===state.category)){
+ const visibleProducts=state.products.filter(p=>state.category===null||p.category_id===state.category);
+ if(!visibleProducts.length){
+  const empty=document.createElement('p');empty.className='catalog-empty';
+  empty.textContent=state.products.length?'Nenhum produto disponível nesta categoria.':'Nosso cardápio está sendo preparado. Volte em breve!';
+  $('products').append(empty);
+ }
+ for(const product of visibleProducts){
   const card=document.createElement('article');card.className='product';
   const symbol=document.createElement('div');symbol.className='symbol';symbol.textContent='🍔';
   const title=document.createElement('h3');title.textContent=product.name;
