@@ -1,5 +1,7 @@
 # Publicação segura — IMPÉRIO BURGER
 
+Para a sequência operacional de aprovação, liberação controlada e reversão, consulte [GO-LIVE.md](GO-LIVE.md).
+
 ## Arquitetura sugerida
 
 - **Frontend:** hospedagem estática com HTTPS, servindo o diretório `frontend/`. O frontend usa `/api` na mesma origem em produção; configure o proxy reverso HTTPS para encaminhar `/api/*` ao backend. Para hospedar a API em domínio separado, edite `frontend/config.js` e configure `CORS_ORIGIN` com a origem do site.
