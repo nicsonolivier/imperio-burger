@@ -107,3 +107,9 @@ test('valores comerciais rejeitam frações de centavo',()=>{
  assert.match(js,/price_cents:parseCents\(data\.get\('price'\)\)/);
  assert.match(js,/fee_cents:parseCents\(data\.get\('fee'\)\)/);
 });
+
+test('login diferencia autenticação de falhas parciais no carregamento inicial',()=>{
+ assert.match(js,/Promise\.allSettled\(\[loadOrders\(\),loadStore\(\),loadCatalog\(\),loadCommercial\(\)\]\)/);
+ assert.match(js,/if\(failed&&token\)/);
+ assert.match(js,/Login realizado, mas alguns dados não carregaram/);
+});
