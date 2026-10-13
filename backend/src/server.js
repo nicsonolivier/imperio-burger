@@ -19,8 +19,8 @@ if(process.env.NODE_ENV==='production'){
  for(const origin of process.env.CORS_ORIGIN.split(',').map(value=>value.trim())){
   let parsed;
   try{parsed=new URL(origin)}catch{throw Error('CORS_ORIGIN deve conter origens HTTPS válidas')}
-  if(!origin||parsed.origin!==origin||parsed.protocol!=='https:'||parsed.username||parsed.password)
-   throw Error('Produção exige origens HTTPS válidas em CORS_ORIGIN');
+  if(!origin||parsed.origin!==origin||!(['https:'].includes(parsed.protocol)||(parsed.protocol==='http:'&&['localhost','127.0.0.1'].includes(parsed.hostname)))||parsed.username||parsed.password)
+   throw Error('Produção exige origens HTTPS (ou HTTP loopback local) em CORS_ORIGIN');
  }
 }
 initAdmin();
