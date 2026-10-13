@@ -110,7 +110,6 @@ async function init(){
   event.preventDefault();
   if(!state.cart.length||!state.open||state.submitting)return;
   state.submitting=true;
-  for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=true;
   renderCatalog();renderCart();
   const button=$('submit-order');button.disabled=true;
   $('checkout-message').textContent='Enviando pedido...';
@@ -119,6 +118,7 @@ async function init(){
   const payload={customer_name:data.get('customer_name'),customer_phone:data.get('customer_phone'),fulfillment,payment_method:data.get('payment_method'),items:state.cart.map(x=>({...x}))};
   if(fulfillment==='delivery'){payload.address=data.get('address');payload.delivery_area_id=Number(data.get('delivery_area_id'))}
   if(data.get('coupon')?.trim())payload.coupon=data.get('coupon').trim();
+  for(const field of $('checkout').querySelectorAll('input,select,textarea'))field.disabled=true;
   try{
    const order=await api('/orders',{method:'POST',body:JSON.stringify(payload)});
    state.cart=[];renderCart();
