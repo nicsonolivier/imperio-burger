@@ -41,3 +41,8 @@ Nunca envie senhas, segredos JWT, banco SQLite ou arquivos `.env` ao GitHub. Man
 - Sem implantação realizada por este repositório.
 
 Este documento é um guia de preparação; não confirma publicação em hospedagem externa.
+
+
+## Backups e recuperação
+
+Antes de publicar, implemente rotina periódica de backup SQLite, retenção segura e testes de restauração conforme `BACKUP.md`. O repositório fornece um comando manual, mas não executa backups automaticamente.
