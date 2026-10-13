@@ -78,8 +78,10 @@ function updateFulfillment(){
  $('delivery-area').required=delivery;
  renderCart();
 }
+let trackingRequestId=0;
 const statusLabels={received:'Recebido',confirmed:'Confirmado',preparing:'Em preparo',out_for_delivery:'Saiu para entrega',delivered:'Concluído',cancelled:'Cancelado'};
 async function trackOrder(id){
+ const requestId=++trackingRequestId;
  const value=id.trim();
  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)){
   $('tracking-result').textContent='Informe um código de pedido válido.';
@@ -88,8 +90,9 @@ async function trackOrder(id){
  $('tracking-result').textContent='Consultando pedido...';
  try{
   const order=await api('/orders/'+encodeURIComponent(value));
+  if(requestId!==trackingRequestId)return;
   $('tracking-result').textContent='Status: '+(statusLabels[order.status]||order.status)+' · Total: '+money(order.total_cents);
- }catch(error){$('tracking-result').textContent=error.message}
+ }catch(error){if(requestId===trackingRequestId)$('tracking-result').textContent=error.message}
 }
 async function init(){
  $('tracking-form').addEventListener('submit',event=>{
