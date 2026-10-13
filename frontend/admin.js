@@ -66,7 +66,7 @@ function displayOrders(orders){
    label.append(select);
    const save=document.createElement('button');save.type='button';save.textContent='Atualizar';save.disabled=true;
    select.addEventListener('change',()=>{save.disabled=!select.value});
-   save.addEventListener('click',async()=>{if(!select.value)return;save.disabled=true;try{await api('/admin/orders/'+order.id+'/status',{method:'PATCH',body:JSON.stringify({status:select.value})});$('admin-message').textContent='Pedido #'+order.id+' atualizado.';await loadOrders()}catch(error){$('admin-message').textContent=error.message}finally{save.disabled=!select.value}});
+   save.addEventListener('click',async()=>{if(!select.value||select.disabled)return;save.disabled=true;select.disabled=true;try{await api('/admin/orders/'+order.id+'/status',{method:'PATCH',body:JSON.stringify({status:select.value})});$('admin-message').textContent='Pedido #'+order.id+' atualizado.';await loadOrders()}catch(error){$('admin-message').textContent=error.message}finally{select.disabled=false;save.disabled=!select.value}});
    status.append(label,save);
   }
   const items=document.createElement('ul');items.className='order-items';
