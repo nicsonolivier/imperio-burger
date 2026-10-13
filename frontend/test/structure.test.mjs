@@ -94,3 +94,8 @@ test('carrinho acessível pode fechar com Escape e restaura foco',()=>{
  assert.match(js,/if\(open\)\$\('cart-close'\)\.focus\(\);else \$\('cart-toggle'\)\.focus\(\)/);
  assert.match(js,/event\.key==='Escape'/);
 });
+
+test('carrinho fechado não permite navegação por teclado em controles ocultos',()=>{
+ assert.match(html,/<aside id="cart"[^>]*aria-hidden="true" inert>/);
+ assert.match(js,/\$\('cart'\)\.inert=!open/);
+});
