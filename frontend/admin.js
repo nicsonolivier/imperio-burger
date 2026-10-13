@@ -42,7 +42,19 @@ function displayOrders(orders){
    save.addEventListener('click',async()=>{save.disabled=true;try{await api('/admin/orders/'+order.id+'/status',{method:'PATCH',body:JSON.stringify({status:select.value})});$('admin-message').textContent='Pedido #'+order.id+' atualizado.';await loadOrders()}catch(error){$('admin-message').textContent=error.message}finally{save.disabled=false}});
    status.append(label,save);
   }
-  card.append(top,customer,delivery,time,status);$('orders').append(card);
+  const items=document.createElement('ul');items.className='order-items';
+  for(const item of order.items||[]){
+   const li=document.createElement('li');
+   const product=document.createElement('strong');product.textContent=item.quantity+'× '+item.product_name;
+   li.append(product);
+   for(const addon of item.addons||[]){
+    const detail=document.createElement('span');
+    detail.textContent=' + '+addon.addon_name;
+    li.append(detail);
+   }
+   items.append(li);
+  }
+  card.append(top,customer,delivery,time,items,status);$('orders').append(card);
  }
 }
 async function loadOrders(){
