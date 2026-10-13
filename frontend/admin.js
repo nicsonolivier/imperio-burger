@@ -168,7 +168,7 @@ $('product-form').addEventListener('submit',async event=>{
  try{
   const data=new FormData(event.currentTarget);
   const price=Number(data.get('price'));
-  if(!Number.isFinite(price)||price<0||price>10000||!Number.isInteger(price*100))throw Error('Preço inválido: use valor entre R$ 0,00 e R$ 10.000,00 com até duas casas decimais');
+  if(!Number.isFinite(price)||price<0||price>10000||Math.abs(price*100-Math.round(price*100))>1e-7)throw Error('Preço inválido: use valor entre R$ 0,00 e R$ 10.000,00 com até duas casas decimais');
   await api('/admin/manage/products'+(editingProduct?'/'+editingProduct.id:''),{method:editingProduct?'PUT':'POST',body:JSON.stringify({
    category_id:Number(data.get('category_id')),name:data.get('name').trim(),
    description:data.get('description').trim(),price_cents:Math.round(price*100),active:editingProduct?Boolean(editingProduct.active):true
