@@ -50,7 +50,8 @@ test('carrinho não muda enquanto checkout está enviando pedido',()=>{
  assert.match(js,/minus\.disabled=state\.submitting/);
  assert.match(js,/plus\.disabled=state\.submitting\|\|line\.quantity>=30/);
  assert.match(js,/state\.submitting=true;\s*renderCatalog\(\);renderCart\(\)/);
- assert.match(js,/finally\{state\.submitting=false;renderCatalog\(\);renderCart\(\)\}/);
+ assert.match(js,/finally\{state\.submitting=false;for\(const field of/);
+ assert.match(js,/field\.disabled=false;renderCatalog\(\);renderCart\(\)\}/);
 });
 
 test('formulário de checkout é bloqueado só depois da leitura do FormData',()=>{
