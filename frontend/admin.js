@@ -61,10 +61,12 @@ function displayOrders(orders){
   if(allowed.length){
    const label=document.createElement('label');label.textContent='Alterar status';
    const select=document.createElement('select');select.setAttribute('aria-label','Novo status do pedido '+order.id);
+   const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione o novo status';placeholder.disabled=true;placeholder.selected=true;select.append(placeholder);
    for(const value of allowed){const option=document.createElement('option');option.value=value;option.textContent=statusNames[value];select.append(option)}
    label.append(select);
-   const save=document.createElement('button');save.type='button';save.textContent='Atualizar';
-   save.addEventListener('click',async()=>{save.disabled=true;try{await api('/admin/orders/'+order.id+'/status',{method:'PATCH',body:JSON.stringify({status:select.value})});$('admin-message').textContent='Pedido #'+order.id+' atualizado.';await loadOrders()}catch(error){$('admin-message').textContent=error.message}finally{save.disabled=false}});
+   const save=document.createElement('button');save.type='button';save.textContent='Atualizar';save.disabled=true;
+   select.addEventListener('change',()=>{save.disabled=!select.value});
+   save.addEventListener('click',async()=>{if(!select.value)return;save.disabled=true;try{await api('/admin/orders/'+order.id+'/status',{method:'PATCH',body:JSON.stringify({status:select.value})});$('admin-message').textContent='Pedido #'+order.id+' atualizado.';await loadOrders()}catch(error){$('admin-message').textContent=error.message}finally{save.disabled=!select.value}});
    status.append(label,save);
   }
   const items=document.createElement('ul');items.className='order-items';
