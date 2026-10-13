@@ -36,5 +36,13 @@ jobs:
           test -n "$backup_file"
           BACKUP_FILE="$backup_file" node --input-type=module -e "import Database from 'better-sqlite3'; const db=new Database(process.env.BACKUP_FILE,{readonly:true,fileMustExist:true}); if(db.prepare('SELECT value FROM backup_probe').get()?.value!=='verified')process.exit(1); db.close()"
           test "$(stat -c '%a' "$backup_file")" = 600
+          if BACKUP_DIR="$temp_dir" DATABASE_PATH="$temp_dir/source.sqlite" bash scripts/backup-scheduled.sh >/dev/null 2>&1; then
+            echo 'Backup directory containing source database must be rejected' >&2
+            exit 1
+          fi
+          if BACKUP_DIR="$temp_dir/backups/../" DATABASE_PATH="$temp_dir/source.sqlite" bash scripts/backup-scheduled.sh >/dev/null 2>&1; then
+            echo 'Normalized backup directory containing source must be rejected' >&2
+            exit 1
+          fi
       - name: Run integration tests
         run: npm test

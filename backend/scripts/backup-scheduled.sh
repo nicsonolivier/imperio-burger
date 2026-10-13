@@ -8,7 +8,9 @@ if [[ "$BACKUP_DIR" != /* || "$DATABASE_PATH" != /* ]]; then
   echo "BACKUP_DIR e DATABASE_PATH devem ser caminhos absolutos" >&2
   exit 1
 fi
-if [[ "$BACKUP_DIR" == "$DATABASE_PATH" || "$BACKUP_DIR/" == "$DATABASE_PATH/"* ]]; then
+backup_dir_real="$(realpath -m -- "$BACKUP_DIR")"
+database_real="$(realpath -m -- "$DATABASE_PATH")"
+if [[ "$database_real" == "$backup_dir_real" || "$database_real" == "$backup_dir_real/"* ]]; then
   echo "BACKUP_DIR não pode conter o banco de origem" >&2
   exit 1
 fi
