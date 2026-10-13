@@ -1,4 +1,5 @@
-// Em desenvolvimento, a API roda em :3001; em produção, usa /api na mesma origem.
-// Para hospedar a API em outro domínio, altere a URL abaixo e configure CORS_ORIGIN.
-const isLocal=['localhost','127.0.0.1'].includes(window.location.hostname);
-export const API_BASE_URL=isLocal?'http://localhost:3001/api':window.location.origin+'/api';
+// Servidor estático de desenvolvimento (:5500) usa API local (:3001).
+// Docker Compose (:8080) e produção usam proxy /api na mesma origem.
+const {hostname,port,origin}=window.location;
+const localDev=['localhost','127.0.0.1'].includes(hostname)&&port==='5500';
+export const API_BASE_URL=localDev?'http://localhost:3001/api':origin+'/api';
