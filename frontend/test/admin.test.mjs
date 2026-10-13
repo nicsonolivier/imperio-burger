@@ -43,3 +43,7 @@ test('requisições antigas não podem restaurar dados de outra sessão',()=>{
  assert.match(js,/if\(sessionToken!==token\)throw Error/);
  assert.match(js,/if\(sessionToken&&\(response\.status===401\|\|response\.status===403\)\)/);
 });
+
+test('falha de autenticação apaga a senha sem limpar o email',()=>{
+ assert.match(js,/event\.currentTarget\.querySelector\('\[name="password"\]'\)\.value=''/);
+});
