@@ -82,9 +82,9 @@ test('recarregar catálogo sincroniza estado do produto em edição',()=>{
 });
 
 test('painel detalha preços dos itens e adicionais de cada pedido',()=>{
- assert.match(js,/money\(item\.unit_price_cents\)/);
+ assert.match(js,/money\(basePrice\)/);
  assert.match(js,/money\(addon\.price_cents\)/);
- assert.match(js,/\(item\.unit_price_cents\+\(item\.addons\|\|\[\]\)\.reduce/);
+ assert.match(js,/const lineTotal=item\.unit_price_cents\*item\.quantity/);
  assert.match(js,/\*item\.quantity/);
  assert.match(js,/money\(lineTotal\)/);
 });
