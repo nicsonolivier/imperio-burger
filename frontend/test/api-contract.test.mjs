@@ -38,3 +38,16 @@ test('painel usa rotas de gestão protegidas e campos válidos',()=>{
   assert.ok(admin.includes(field));
  }
 });
+
+test('contrato de itens e adicionais do pedido permanece alinhado ao painel',()=>{
+ assert.match(backend,/app\.get\('\/api\/admin\/orders',auth/);
+ assert.match(backend,/FROM order_items WHERE order_id=/);
+ assert.match(backend,/FROM order_item_addons WHERE order_item_id=/);
+ for(const field of ['items','product_name','quantity','addons','addon_name']){
+  assert.ok(backend.includes(field),'Backend sem campo '+field);
+  assert.ok(admin.includes(field),'Painel sem campo '+field);
+ }
+ assert.match(admin,/order\.items/);
+ assert.match(admin,/item\.addons/);
+ assert.doesNotMatch(admin,/\.innerHTML\s*=/);
+});
