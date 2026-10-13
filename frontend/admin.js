@@ -37,6 +37,7 @@ function displayOrders(orders){
   const title=document.createElement('h2');title.textContent='Pedido #'+order.id;
   const total=document.createElement('strong');total.textContent=money(order.total_cents);
   top.append(title,total);
+  const summary=document.createElement('p');summary.textContent='Subtotal informado: '+money(order.subtotal_cents)+' · Total cobrado: '+money(order.total_cents);
   const customer=document.createElement('p');customer.textContent=order.customer_name+' · '+order.customer_phone;
   const delivery=document.createElement('p');delivery.textContent=(order.fulfillment==='delivery'?'Entrega: '+(order.address||'Endereço não informado'):'Retirada')+' · '+order.payment_method;
   const time=document.createElement('p');time.textContent='Criado em: '+order.created_at;
@@ -68,7 +69,7 @@ function displayOrders(orders){
    const lineAmount=document.createElement('strong');lineAmount.textContent=' · Total: '+money(lineTotal);li.append(lineAmount);
    items.append(li);
   }
-  card.append(top,customer,delivery,time,items,status);$('orders').append(card);
+  card.append(top,customer,delivery,time,items,summary,status);$('orders').append(card);
  }
 }
 async function loadOrders(){
