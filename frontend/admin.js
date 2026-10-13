@@ -188,7 +188,7 @@ $('product-form').addEventListener('submit',async event=>{
 
 function parseCents(raw){
  const value=Number(raw);
- if(!Number.isFinite(value)||value<0||value>10000)throw Error('Valor monetário inválido');
+ if(!Number.isFinite(value)||value<0||value>10000||Math.abs(value*100-Math.round(value*100))>1e-7)throw Error('Valor monetário inválido: use até duas casas decimais, entre R$ 0,00 e R$ 10.000,00');
  return Math.round(value*100);
 }
 async function loadCommercial(){
