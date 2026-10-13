@@ -144,3 +144,8 @@ test('controles de quantidade identificam produto para leitores de tela',()=>{
  assert.match(js,/Adicionar uma unidade de '\+product\.name/);
  assert.match(js,/Quantidade de '\+product\.name\+': '\+line\.quantity/);
 });
+
+test('contador do carrinho anuncia alterações para leitores de tela',()=>{
+ assert.match(html,/id="cart-count" aria-live="polite" aria-atomic="true"/);
+ assert.match(js,/\$\('cart-count'\)\.textContent=String\(count\)/);
+});
