@@ -46,7 +46,7 @@ app.get('/api/store',(_req,res)=>res.json({
 }));
 app.get('/api/catalog',(_req,res)=>res.json({
  categories:db.prepare('SELECT id,name FROM categories WHERE active=1').all(),
- products:db.prepare('SELECT id,category_id,name,description,price_cents FROM products WHERE active=1').all(),
+ products:db.prepare('SELECT p.id,p.category_id,p.name,p.description,p.price_cents FROM products p JOIN categories c ON c.id=p.category_id WHERE p.active=1 AND c.active=1').all(),
  addons:db.prepare('SELECT id,name,price_cents FROM addons WHERE active=1').all(),
  delivery_areas:db.prepare('SELECT id,name,fee_cents FROM delivery_areas WHERE active=1').all()
 }));
