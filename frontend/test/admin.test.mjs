@@ -37,3 +37,9 @@ test('sessão expirada limpa dados sensíveis e login inválido não dispara log
  assert.match(js,/categories=\[\]/);
  assert.match(js,/Sessão encerrada\. Entre novamente\./);
 });
+
+test('requisições antigas não podem restaurar dados de outra sessão',()=>{
+ assert.match(js,/const sessionToken=token/);
+ assert.match(js,/if\(sessionToken!==token\)throw Error/);
+ assert.match(js,/if\(sessionToken&&\(response\.status===401\|\|response\.status===403\)\)/);
+});
