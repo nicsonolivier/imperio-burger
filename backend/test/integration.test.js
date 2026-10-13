@@ -94,6 +94,11 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
  const allOrders=await request('/api/admin/orders','GET',undefined,token);
  const saved=allOrders.data.orders.find(o=>o.public_id===order.data.order_id);
  assert.ok(saved);
+ assert.equal(saved.items.length,1);
+ assert.equal(saved.items[0].product_name,item.name);
+ assert.equal(saved.items[0].quantity,2);
+ assert.equal(saved.items[0].addons.length,1);
+ assert.equal(saved.items[0].addons[0].addon_name,'Bacon Extra');
  assert.equal((await request('/api/admin/orders/'+saved.id+'/status','PATCH',{status:'delivered'},token)).status,409);
  assert.equal((await request('/api/admin/orders/'+saved.id+'/status','PATCH',{status:'confirmed'},token)).status,200);
  assert.equal((await request('/api/admin/orders/'+saved.id+'/status','PATCH',{status:'confirmed'},token)).status,409);
