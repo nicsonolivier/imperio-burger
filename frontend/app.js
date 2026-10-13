@@ -151,6 +151,7 @@ async function init(){
   state.products=catalog.products;state.categories=catalog.categories;state.addons=catalog.addons;state.areas=catalog.delivery_areas;
   $('store-badge').textContent=state.open?'🟢 Aberto para pedidos':'🔴 Pedidos indisponíveis';
   $('catalog-status').textContent=state.products.length+' produtos disponíveis';
+  $('fulfillment').querySelector('option[value="delivery"]').disabled=!state.areas.length;
   $('delivery-area').replaceChildren();
   const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Selecione sua região';$('delivery-area').append(placeholder);
   for(const area of state.areas){const option=document.createElement('option');option.value=String(area.id);option.textContent=area.name+' · '+money(area.fee_cents);$('delivery-area').append(option)}

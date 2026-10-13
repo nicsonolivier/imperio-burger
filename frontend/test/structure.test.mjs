@@ -116,3 +116,7 @@ test('cardápio mostra mensagem quando não há produtos na categoria',()=>{
 test('edição do código de rastreamento invalida resposta pendente',()=>{
  assert.match(js,/\$\('tracking-id'\)\.addEventListener\('input',\(\)=>\{\+\+trackingRequestId;\$\('tracking-result'\)\.textContent=''\}\)/);
 });
+
+test('entrega indisponível sem regiões de entrega cadastradas',()=>{
+ assert.match(js,/querySelector\('option\[value="delivery"\]'\)\.disabled=!state\.areas\.length/);
+});
