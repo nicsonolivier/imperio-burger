@@ -83,6 +83,14 @@ test('fluxo HTTP real: autenticação, gestão, cupom, frete e pedido', {timeout
  assert.equal((await request('/api/admin/manage/products','POST',{category_id:'1',name:'Invalido',description:'',price_cents:100,active:true},token)).status,400);
  assert.equal((await request('/api/admin/manage/products','POST',{category_id:999999,name:'Invalido',description:'',price_cents:100,active:true},token)).status,400);
  assert.equal((await request('/api/admin/manage/addons','POST',{name:'Bacon Extra',price_cents:500,active:true},token)).status,409);
+ const hiddenCategory=await request('/api/admin/manage/categories','POST',{name:'Categoria Oculta',active:true},token);
+ assert.equal(hiddenCategory.status,201);
+ const hiddenProduct=await request('/api/admin/manage/products','POST',{category_id:hiddenCategory.data.id,name:'Produto Oculto',description:'Teste',price_cents:1500,active:true},token);
+ assert.equal(hiddenProduct.status,201);
+ assert.ok((await request('/api/catalog')).data.products.some(p=>p.id===hiddenProduct.data.id));
+ assert.equal((await request('/api/admin/manage/categories/'+hiddenCategory.data.id+'/active','PATCH',{active:false},token)).status,200);
+ assert.ok(!(await request('/api/catalog')).data.products.some(p=>p.id===hiddenProduct.data.id));
+ assert.equal((await request('/api/orders','POST',{...payload,items:[{product_id:hiddenProduct.data.id,quantity:1}]})).status,400);
  const allOrders=await request('/api/admin/orders','GET',undefined,token);
  const saved=allOrders.data.orders.find(o=>o.public_id===order.data.order_id);
  assert.ok(saved);
