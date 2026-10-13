@@ -105,7 +105,7 @@ $('store-toggle').addEventListener('click',async()=>{
  try{
   await api('/admin/store',{method:'PATCH',body:JSON.stringify({accepting_orders:!acceptingOrders})});
   await loadStore();$('admin-message').textContent='Status da loja atualizado.';
- }catch(error){$('admin-message').textContent=error.message;button.disabled=false}
+ }catch(error){$('admin-message').textContent=error.message}finally{button.disabled=false}
 });
 
 function makeToggle(resource,item,after){
