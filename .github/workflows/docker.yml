@@ -1,0 +1,53 @@
+name: Docker Compose CI
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'deploy/**'
+      - 'compose.yaml'
+      - '.github/workflows/docker.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'deploy/**'
+      - 'compose.yaml'
+      - '.github/workflows/docker.yml'
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Criar segredos temporários exclusivos do CI
+        run: |
+          cat > backend/.env <<'EOF'
+          JWT_SECRET=ci-only-32-characters-random-placeholder-never-use-in-production
+          ADMIN_EMAIL=ci@example.com
+          ADMIN_PASSWORD=ci-password-strong-for-testing
+          EOF
+      - name: Validar configuração Compose
+        run: docker compose config --quiet
+      - name: Construir e iniciar stack
+        run: docker compose up --build -d
+      - name: Aguardar API via Nginx
+        run: |
+          for i in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8080/api/health | grep -q '"status":"ok"'; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs
+          exit 1
+      - name: Verificar site, painel e catálogo
+        run: |
+          curl --fail --silent http://127.0.0.1:8080/ | grep -q 'IMPÉRIO'
+          curl --fail --silent http://127.0.0.1:8080/admin.html | grep -q 'admin'
+          curl --fail --silent http://127.0.0.1:8080/api/catalog | grep -q '"products"'
+      - name: Encerrar serviços
+        if: always()
+        run: docker compose down -v
