@@ -179,3 +179,10 @@ test('total de linha não duplica preços de adicionais já incluídos no unitá
  assert.match(js,/const lineTotal=item\.unit_price_cents\*item\.quantity/);
  assert.doesNotMatch(js,/const lineTotal=\(item\.unit_price_cents\+/);
 });
+
+test('atualização de status exige seleção explícita',()=>{
+ assert.match(js,/placeholder\.textContent='Selecione o novo status'/);
+ assert.match(js,/placeholder\.disabled=true;placeholder\.selected=true/);
+ assert.match(js,/save\.disabled=true;\s*select\.addEventListener\('change'/);
+ assert.match(js,/if\(!select\.value\)return;save\.disabled=true/);
+});
