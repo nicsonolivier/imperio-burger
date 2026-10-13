@@ -11,6 +11,12 @@ import {db,initAdmin} from './db.js';
 import {management} from './management.js';
 
 if(!process.env.JWT_SECRET||process.env.JWT_SECRET.length<32)throw Error('Configure JWT_SECRET com no mínimo 32 caracteres');
+if(process.env.NODE_ENV==='production'){
+ if(!process.env.ADMIN_EMAIL||!process.env.ADMIN_PASSWORD||process.env.ADMIN_PASSWORD.length<12)
+  throw Error('Produção exige ADMIN_EMAIL e ADMIN_PASSWORD com senha de 12+ caracteres');
+ if(!process.env.CORS_ORIGIN?.trim())
+  throw Error('Produção exige CORS_ORIGIN explícito');
+}
 initAdmin();
 const app=express();
 if(process.env.NODE_ENV==='production')app.set('trust proxy',1);
