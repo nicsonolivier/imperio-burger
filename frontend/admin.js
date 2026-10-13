@@ -9,11 +9,15 @@ let categories=[];
 async function api(path,options={}){
  const response=await fetch(API_BASE_URL+path,{...options,headers:{'content-type':'application/json',...(token?{authorization:'Bearer '+token}:{}),...options.headers}});
  let data;try{data=await response.json()}catch{throw Error('Resposta inválida do servidor')}
- if(!response.ok){if(response.status===401||response.status===403){logout()}throw Error(data.error||'Requisição recusada')}
+ if(!response.ok){if(token&&(response.status===401||response.status===403)){logout();$('login-message').textContent='Sessão encerrada. Entre novamente.'}throw Error(data.error||'Requisição recusada')}
  return data;
 }
 function logout(){
  token=null;
+ for(const id of ['orders','category-list','product-list','addon-list','coupon-list','area-list'])$(id).replaceChildren();
+ categories=[];
+ acceptingOrders=false;
+ $('admin-message').textContent='';
  $('dashboard').hidden=true;$('login-view').hidden=false;$('logout').hidden=true;
  $('login-form').reset();
 }
