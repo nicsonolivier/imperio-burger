@@ -62,3 +62,9 @@ test('logout descarta edição de produto e limpa o formulário',()=>{
  assert.match(logout,/\$\('product-form'\)\.reset\(\)/);
  assert.match(logout,/\$\('product-cancel'\)\.hidden=true/);
 });
+
+test('atualização do catálogo preserva a categoria selecionada no formulário',()=>{
+ assert.match(js,/const selectedCategory=\$\('product-category'\)\.value/);
+ assert.match(js,/option\.value===selectedCategory/);
+ assert.match(js,/\$\('product-category'\)\.value=selectedCategory/);
+});
