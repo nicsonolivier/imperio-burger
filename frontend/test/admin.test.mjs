@@ -156,3 +156,12 @@ test('controles de ativação comercial são liberados após sucesso ou falha',(
  const handler=js.slice(start,end);
  assert.match(handler,/finally\{button\.disabled=false\}/);
 });
+
+test('edição de categorias preserva ativação e permite cancelar',()=>{
+ assert.match(html,/id="category-submit"/);
+ assert.match(html,/id="category-cancel"/);
+ assert.match(js,/editingCategory=category/);
+ assert.match(js,/function cancelCategoryEdit\(\)/);
+ assert.match(js,/method:editing\?'PUT':'POST'/);
+ assert.match(js,/active:editing\?Boolean\(editing\.active\):true/);
+});
