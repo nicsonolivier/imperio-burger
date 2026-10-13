@@ -45,7 +45,7 @@ test('rastreamento ignora respostas atrasadas de pedidos anteriores',()=>{
 
 test('carrinho não muda enquanto checkout está enviando pedido',()=>{
  assert.match(js,/add\.disabled=!state\.open\|\|state\.submitting/);
- assert.match(js,/extras\.disabled=state\.submitting/);
+ assert.match(js,/extras\.disabled=state\.submitting\|\|line\.addon_ids\.length>=12/);
  assert.match(js,/remove\.disabled=state\.submitting/);
  assert.match(js,/minus\.disabled=state\.submitting/);
  assert.match(js,/plus\.disabled=state\.submitting\|\|line\.quantity>=30/);
@@ -66,4 +66,9 @@ test('carrinho respeita limite de 30 linhas do backend',()=>{
  assert.match(js,/state\.cart\.length>=30&&!state\.cart\.some\(x=>x\.product_id===product\.id\)/);
  assert.match(js,/if\(!existing&&state\.cart\.length>=30\)return/);
  assert.match(js,/\$\('submit-order'\)\.disabled=[^;]+;\s*renderCatalog\(\)/);
+});
+
+test('seleção de extras bloqueia o 13º adicional',()=>{
+ assert.match(js,/extras\.disabled=state\.submitting\|\|line\.addon_ids\.length>=12/);
+ assert.match(js,/if\(state\.submitting\|\|line\.addon_ids\.length>=12\)return/);
 });

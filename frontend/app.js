@@ -49,11 +49,10 @@ function renderCart(){
   const info=document.createElement('small');info.textContent=money(product.price_cents)+' cada';
   details.append(name,info);
   if(state.addons.length){
-   const extras=document.createElement('select');extras.setAttribute('aria-label','Adicionar extra para '+product.name);
+   const extras=document.createElement('select');extras.setAttribute('aria-label','Adicionar extra para '+product.name);extras.disabled=state.submitting||line.addon_ids.length>=12;
    const empty=document.createElement('option');empty.value='';empty.textContent='Adicionar extra...';extras.append(empty);
    for(const addon of state.addons.filter(a=>!line.addon_ids.includes(a.id))){const option=document.createElement('option');option.value=String(addon.id);option.textContent=addon.name+' +'+money(addon.price_cents);extras.append(option)}
-   extras.disabled=state.submitting;
-   extras.addEventListener('change',()=>{if(state.submitting)return;if(extras.value&&line.addon_ids.length<12){line.addon_ids.push(Number(extras.value));renderCart()}});
+   extras.addEventListener('change',()=>{if(state.submitting||line.addon_ids.length>=12)return;if(extras.value&&line.addon_ids.length<12){line.addon_ids.push(Number(extras.value));renderCart()}});
    details.append(extras);
    for(const id of line.addon_ids){const addon=state.addons.find(a=>a.id===id);if(!addon)continue;const remove=document.createElement('button');remove.type='button';remove.textContent='✕ '+addon.name;remove.disabled=state.submitting;remove.addEventListener('click',()=>{if(state.submitting)return;line.addon_ids=line.addon_ids.filter(x=>x!==id);renderCart()});details.append(remove)}
   }
