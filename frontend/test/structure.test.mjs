@@ -105,3 +105,10 @@ test('atalho de teclado permite pular direto ao cardápio',()=>{
  assert.match(css,/\.skip-link:focus\{/);
  assert.match(css,/:focus-visible\{/);
 });
+
+test('cardápio mostra mensagem quando não há produtos na categoria',()=>{
+ assert.match(js,/if\(!visibleProducts\.length\)/);
+ assert.match(js,/Nenhum produto disponível nesta categoria/);
+ assert.match(js,/Nosso cardápio está sendo preparado/);
+ assert.match(css,/\.catalog-empty\{/);
+});
