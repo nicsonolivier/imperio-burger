@@ -4,6 +4,7 @@ ENV NODE_ENV=production PORT=3001 DATABASE_PATH=/data/imperio.sqlite
 COPY package*.json ./
 RUN npm install --omit=dev --no-audit --no-fund && npm cache clean --force
 COPY src ./src
+COPY scripts ./scripts
 RUN mkdir -p /data && chown -R node:node /data /app
 USER node
 EXPOSE 3001
