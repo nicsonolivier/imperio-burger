@@ -114,7 +114,16 @@ async function init(){
  $('cart-toggle').addEventListener('click',()=>showCart(true));
  $('cart-close').addEventListener('click',()=>showCart(false));
  $('overlay').addEventListener('click',()=>showCart(false));
- document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('cart').classList.contains('open'))showCart(false)});
+ document.addEventListener('keydown',event=>{
+  if(!$('cart').classList.contains('open'))return;
+  if(event.key==='Escape'){showCart(false);return}
+  if(event.key!=='Tab')return;
+  const controls=[...$('cart').querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href]')].filter(element=>element.getClientRects().length);
+  if(!controls.length)return;
+  const first=controls[0],last=controls[controls.length-1];
+  if(event.shiftKey&&(document.activeElement===first||!$('cart').contains(document.activeElement))){event.preventDefault();last.focus()}
+  else if(!event.shiftKey&&(document.activeElement===last||!$('cart').contains(document.activeElement))){event.preventDefault();first.focus()}
+ });
  $('fulfillment').addEventListener('change',updateFulfillment);
  $('delivery-area').addEventListener('change',()=>{if(!state.submitting)renderCart()});
  $('checkout').addEventListener('submit',async event=>{
